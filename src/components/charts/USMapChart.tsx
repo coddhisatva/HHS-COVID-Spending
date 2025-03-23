@@ -1,246 +1,195 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import * as d3 from 'd3';
-import { feature, mesh } from 'topojson-client';
-import { useData } from '@/context/DataContext';
+import dynamic from 'next/dynamic';
+import { feature } from 'topojson-client';
 import { formatCurrency } from '@/utils/formatters';
-import { GeometryCollection, Topology } from 'topojson-specification';
+import { useData } from '@/context/DataContext';
 
-const US_STATES_URL = 'https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json';
+// Only import the types from d3 
+import type { GeoPermissibleObjects } from 'd3-geo';
 
-// Component to display a tooltip
-const Tooltip = ({ x, y, content }: { x: number; y: number; content: React.ReactNode }) => {
-  return (
-    <div
-      className="absolute bg-white p-2 shadow-md rounded border border-gray-200 z-10 pointer-events-none"
-      style={{
-        left: `${x + 10}px`,
-        top: `${y - 40}px`,
-        transform: 'translate(-50%, -100%)',
-        minWidth: '150px',
-      }}
-    >
-      {content}
-    </div>
-  );
+// Dynamic imports for D3 modules
+const d3 = {
+  select: null,
+  geoPath: null,
+  geoAlbersUsa: null,
+  scaleLinear: null,
+  max: null
 };
 
-interface StateData {
-  state: string;
-  amount: number;
+interface USMapChartProps {
+  width?: number;
+  height?: number;
 }
 
-interface StateProperties {
-  name: string;
-  code: string;
-  [key: string]: any;
-}
-
-interface StateFeature {
-  type: string;
-  id: number;
-  properties: StateProperties;
-  geometry: any;
-}
-
-export default function USMapChart() {
-  const { state, dispatch } = useData();
-  const { chartData } = state;
-  const svgRef = useRef<SVGSVGElement | null>(null);
-  const tooltipRef = useRef<HTMLDivElement | null>(null);
-  const [tooltipContent, setTooltipContent] = useState<React.ReactNode | null>(null);
-  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
-  const [selectedState, setSelectedState] = useState<string | null>(null);
+// Create a component that will only run on the client side
+function USMapChart({ width = 800, height = 500 }: USMapChartProps) {
+  const { state } = useData();
+  const { mapData } = state;
+  const mapRef = useRef<SVGSVGElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const [usTopoJSON, setUsTopoJSON] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [hoveredState, setHoveredState] = useState<string | null>(null);
   
-  // Load and render US map
+  // Load D3 modules on client side only
   useEffect(() => {
-    const svg = d3.select(svgRef.current);
+    Promise.all([
+      import('d3-selection').then(module => { d3.select = module.select }),
+      import('d3-geo').then(module => {
+        d3.geoPath = module.geoPath;
+        d3.geoAlbersUsa = module.geoAlbersUsa;
+      }),
+      import('d3-scale').then(module => { d3.scaleLinear = module.scaleLinear }),
+      import('d3-array').then(module => { d3.max = module.max }),
+    ]).then(() => {
+      setLoading(false);
+    });
+  }, []);
+  
+  // Load US map TopoJSON data
+  useEffect(() => {
+    fetch('/us-states.json')
+      .then(response => response.json())
+      .then(data => {
+        setUsTopoJSON(data);
+      })
+      .catch(error => {
+        console.error('Error loading US TopoJSON data:', error);
+      });
+  }, []);
+  
+  // Draw the map when all data is ready
+  useEffect(() => {
+    if (!loading && usTopoJSON && d3.select && mapRef.current) {
+      drawMap();
+    }
+  }, [loading, usTopoJSON, mapData]);
+  
+  const drawMap = () => {
+    if (!mapRef.current || !d3.select || !usTopoJSON) return;
     
-    // Clear any existing content
+    const svg = d3.select(mapRef.current);
     svg.selectAll('*').remove();
     
-    // Create a color scale for the map
-    const colorScale = d3.scaleSequential(d3.interpolateBlues)
-      .domain([0, d3.max(chartData.stateData, d => d.amount) || 0]);
+    // Convert TopoJSON to GeoJSON
+    const us = feature(usTopoJSON, usTopoJSON.objects.states) as GeoPermissibleObjects;
     
-    const width = svgRef.current?.clientWidth || 600;
-    const height = svgRef.current?.clientHeight || 400;
-    
-    // Create a projection
+    // Create a projection and path generator
     const projection = d3.geoAlbersUsa()
-      .translate([width / 2, height / 2])
-      .scale(width);
+      .fitSize([width, height], us);
     
-    // Create a path generator
-    const path = d3.geoPath().projection(projection);
+    const path = d3.geoPath()
+      .projection(projection);
     
-    // Create a group for the map
-    const mapGroup = svg.append('g');
+    // Calculate the maximum allocation for color scale
+    const maxAllocation = d3.max(mapData, (d: any) => d.allocations) || 0;
     
-    // Function to handle state hover/click
-    const handleStateMouseOver = (event: MouseEvent, d: StateFeature) => {
-      const stateData = chartData.stateData.find(sd => sd.state === d.properties.code);
-      
-      if (stateData) {
-        setTooltipContent(
-          <div>
-            <p className="font-semibold">{d.properties.name}</p>
-            <p>{formatCurrency(stateData.amount)}</p>
-          </div>
+    // Create a color scale
+    const colorScale = d3.scaleLinear<string>()
+      .domain([0, maxAllocation])
+      .range(['#e5f5e0', '#31a354']);
+    
+    // Create a group for the states
+    const g = svg.append('g');
+    
+    // Add state paths to the map
+    g.selectAll('path')
+      .data((us as any).features)
+      .enter()
+      .append('path')
+      .attr('d', path as any)
+      .attr('fill', (d: any) => {
+        const stateData = mapData.find((state: any) => 
+          state.stateAbbr === d.properties.abbr ||
+          state.stateName === d.properties.name
         );
-        setTooltipPos({ x: event.pageX, y: event.pageY });
-      }
-    };
-    
-    const handleStateMouseOut = () => {
-      setTooltipContent(null);
-    };
-    
-    const handleStateClick = (event: MouseEvent, d: StateFeature) => {
-      const stateCode = d.properties.code;
-      
-      // Toggle selection
-      if (selectedState === stateCode) {
-        setSelectedState(null);
-        dispatch({
-          type: 'SET_FILTER',
-          payload: { selectedState: null }
-        });
-      } else {
-        setSelectedState(stateCode);
-        dispatch({
-          type: 'SET_FILTER',
-          payload: { selectedState: stateCode }
-        });
-      }
-    };
-    
-    // Fetch and render US states
-    d3.json<Topology>(US_STATES_URL).then((us) => {
-      if (!us) return;
-      
-      // Type assertion to help TypeScript understand the structure
-      const statesObject = us.objects.states as GeometryCollection;
-      const states = feature(us, statesObject);
-      
-      // Add state properties
-      states.features.forEach((state: any) => {
-        const geometries = statesObject.geometries;
-        const stateGeom = geometries.find((s) => s.id === state.id);
+        return stateData 
+          ? colorScale(stateData.allocations) 
+          : '#f0f0f0';
+      })
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 0.5)
+      .attr('cursor', 'pointer')
+      .on('mouseover', function(event: MouseEvent, d: any) {
+        const stateData = mapData.find((state: any) => 
+          state.stateAbbr === d.properties.abbr ||
+          state.stateName === d.properties.name
+        );
         
-        // Use type assertion to access properties object safely
-        const stateProps = stateGeom?.properties as Record<string, string> || {};
-        const stateName = stateProps.name;
-        const stateCode = stateProps.code;
+        setHoveredState(d.properties.name);
         
-        state.properties = {
-          ...state.properties,
-          name: stateName,
-          code: stateCode
-        };
+        if (tooltipRef.current) {
+          const tooltip = tooltipRef.current;
+          tooltip.style.display = 'block';
+          tooltip.style.left = `${event.pageX + 10}px`;
+          tooltip.style.top = `${event.pageY - 30}px`;
+          
+          tooltip.innerHTML = `
+            <div class="font-semibold">${d.properties.name}</div>
+            <div>Allocations: ${formatCurrency(stateData?.allocations || 0)}</div>
+            <div>Deallocations: ${formatCurrency(stateData?.deallocations || 0)}</div>
+          `;
+        }
+        
+        d3.select(this)
+          .attr('stroke', '#000')
+          .attr('stroke-width', 1.5);
+      })
+      .on('mousemove', function(event: MouseEvent) {
+        if (tooltipRef.current) {
+          tooltipRef.current.style.left = `${event.pageX + 10}px`;
+          tooltipRef.current.style.top = `${event.pageY - 30}px`;
+        }
+      })
+      .on('mouseout', function() {
+        setHoveredState(null);
+        
+        if (tooltipRef.current) {
+          tooltipRef.current.style.display = 'none';
+        }
+        
+        d3.select(this)
+          .attr('stroke', '#fff')
+          .attr('stroke-width', 0.5);
       });
-      
-      // Draw states
-      mapGroup
-        .selectAll('path')
-        .data(states.features as StateFeature[])
-        .enter()
-        .append('path')
-        .attr('d', path as any)
-        .attr('fill', (d: StateFeature) => {
-          const stateData = chartData.stateData.find(sd => sd.state === d.properties.code);
-          return stateData ? colorScale(stateData.amount) : '#eee';
-        })
-        .attr('stroke', '#fff')
-        .attr('stroke-width', 0.5)
-        .attr('class', 'cursor-pointer hover:opacity-80')
-        .attr('data-state', (d: StateFeature) => d.properties.code)
-        .on('mouseover', function(event, d) {
-          handleStateMouseOver(event, d);
-          d3.select(this).attr('stroke-width', 1.5);
-        })
-        .on('mouseout', function() {
-          handleStateMouseOut();
-          d3.select(this).attr('stroke-width', 0.5);
-        })
-        .on('click', handleStateClick);
-      
-      // Add state borders
-      mapGroup.append('path')
-        .datum(mesh(us, statesObject, (a, b) => a !== b))
-        .attr('fill', 'none')
-        .attr('stroke', '#fff')
-        .attr('stroke-width', 0.5)
-        .attr('d', path as any);
-    });
-    
-    // Add legend
-    const legend = svg.append('g')
-      .attr('transform', `translate(20, ${height - 70})`);
-    
-    const legendTitle = legend.append('text')
-      .attr('class', 'text-sm font-medium text-gray-700')
-      .attr('x', 0)
-      .attr('y', -10)
-      .text('Funding Amount');
-    
-    const legendWidth = 200;
-    const legendHeight = 10;
-    
-    // Create gradient for legend
-    const defs = svg.append('defs');
-    const linearGradient = defs.append('linearGradient')
-      .attr('id', 'legend-gradient')
-      .attr('x1', '0%')
-      .attr('y1', '0%')
-      .attr('x2', '100%')
-      .attr('y2', '0%');
-    
-    // Add color stops
-    linearGradient.append('stop')
-      .attr('offset', '0%')
-      .attr('stop-color', colorScale(0));
-    
-    linearGradient.append('stop')
-      .attr('offset', '100%')
-      .attr('stop-color', colorScale(d3.max(chartData.stateData, d => d.amount) || 0));
-    
-    // Draw legend rectangle
-    legend.append('rect')
-      .attr('width', legendWidth)
-      .attr('height', legendHeight)
-      .style('fill', 'url(#legend-gradient)');
-    
-    // Add legend ticks
-    const legendScale = d3.scaleLinear()
-      .domain([0, d3.max(chartData.stateData, d => d.amount) || 0])
-      .range([0, legendWidth]);
-    
-    const legendAxis = d3.axisBottom(legendScale)
-      .ticks(3)
-      .tickFormat(d => formatCurrency(d as number));
-    
-    legend.append('g')
-      .attr('transform', `translate(0, ${legendHeight})`)
-      .call(legendAxis)
-      .attr('font-size', '10px');
-    
-    // Cleanup
-    return () => {
-      svg.selectAll('*').remove();
-    };
-  }, [chartData.stateData, dispatch, selectedState]);
+  };
+  
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p>Loading map...</p>
+      </div>
+    );
+  }
   
   return (
     <div className="relative h-full">
       <h2 className="text-lg font-medium mb-4">Geographic Distribution</h2>
-      <div className="h-96 relative border border-gray-200 rounded-lg overflow-hidden bg-sky-50">
-        <svg ref={svgRef} width="100%" height="100%" />
-        {tooltipContent && (
-          <Tooltip x={tooltipPos.x} y={tooltipPos.y} content={tooltipContent} />
-        )}
+      <div className="h-80 relative">
+        <svg 
+          ref={mapRef} 
+          width="100%" 
+          height="100%" 
+          viewBox={`0 0 ${width} ${height}`} 
+          preserveAspectRatio="xMidYMid meet"
+        />
+        <div 
+          ref={tooltipRef} 
+          className="absolute hidden bg-white p-2 rounded shadow-md border border-gray-200 z-10"
+          style={{ display: 'none' }}
+        />
       </div>
+      
+      {hoveredState && (
+        <div className="text-center mt-2 text-sm text-gray-600">
+          {hoveredState}
+        </div>
+      )}
     </div>
   );
-} 
+}
+
+// Export a dynamically loaded component with SSR disabled
+export default dynamic(() => Promise.resolve(USMapChart), { ssr: false }); 

@@ -1,10 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import dynamic from 'next/dynamic';
+import { Cell, Tooltip as RechartsTooltip, Legend, PieProps } from 'recharts';
 import { useData } from '@/context/DataContext';
 import { EmergencyFundingAct } from '@/types/data';
 import { formatCurrency, formatPercent } from '@/utils/formatters';
+
+// Dynamically import the PieChart and Pie components with SSR disabled
+const PieChart = dynamic(() => import('recharts').then(mod => mod.PieChart), { ssr: false });
+const Pie = dynamic(() => import('recharts').then(mod => mod.Pie), { ssr: false });
 
 // Custom colors for the pie chart segments
 const COLORS = [
@@ -33,7 +38,7 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-export default function EmergencyFundingPieChart() {
+function EmergencyFundingPieChart() {
   const { state, dispatch } = useData();
   const { chartData } = state;
   // Using number instead of number | null to avoid type issues
@@ -61,16 +66,26 @@ export default function EmergencyFundingPieChart() {
   const handlePieMouseLeave = () => {
     setActiveIndex(NaN);
   };
+
+  // Calculate percentages for each slice
+  const dataWithPercentage = chartData.emergencyFundingBreakdown.map(item => {
+    const total = chartData.emergencyFundingBreakdown.reduce((sum, i) => sum + i.value, 0);
+    const percentage = item.value / total;
+    return {
+      ...item,
+      percentage
+    };
+  });
   
   return (
     <div className="h-full">
       <h2 className="text-lg font-medium mb-4">Distribution by Emergency Funding Act</h2>
       <div className="h-80">
         {chartData.emergencyFundingBreakdown.length > 0 ? (
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
+          <div style={{ width: '100%', height: '100%' }}>
+            <PieChart width={500} height={300}>
               <Pie
-                data={chartData.emergencyFundingBreakdown}
+                data={dataWithPercentage}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
@@ -82,7 +97,6 @@ export default function EmergencyFundingPieChart() {
                 onMouseEnter={handlePieMouseEnter}
                 onMouseLeave={handlePieMouseLeave}
                 activeIndex={Number.isNaN(activeIndex) ? undefined : activeIndex}
-                // @ts-ignore
                 activeShape={(props: any) => {
                   const RADIAN = Math.PI / 180;
                   const { cx, cy, midAngle, innerRadius, outerRadius, startAngle, endAngle, fill, value, name, percent } = props;
@@ -113,11 +127,11 @@ export default function EmergencyFundingPieChart() {
                   );
                 }}
               >
-                {chartData.emergencyFundingBreakdown.map((entry, index) => (
+                {dataWithPercentage.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip content={<CustomTooltip />} />
+              <RechartsTooltip content={<CustomTooltip />} />
               <Legend
                 layout="vertical"
                 align="right"
@@ -125,7 +139,7 @@ export default function EmergencyFundingPieChart() {
                 formatter={(value) => <span className="text-sm text-gray-700">{value}</span>}
               />
             </PieChart>
-          </ResponsiveContainer>
+          </div>
         ) : (
           <div className="flex items-center justify-center h-full bg-gray-50 rounded-lg border border-gray-200">
             <p className="text-gray-500">No data available</p>
@@ -134,4 +148,7 @@ export default function EmergencyFundingPieChart() {
       </div>
     </div>
   );
-} 
+}
+
+// Export a dynamically loaded component with SSR disabled
+export default dynamic(() => Promise.resolve(EmergencyFundingPieChart), { ssr: false }); 

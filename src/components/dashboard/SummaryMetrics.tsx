@@ -1,64 +1,57 @@
 'use client';
 
 import { useData } from '@/context/DataContext';
-import { formatCurrency, formatNumber } from '@/utils/formatters';
-
-interface MetricCardProps {
-  title: string;
-  value: string;
-  className?: string;
-  icon?: React.ReactNode;
-}
-
-function MetricCard({ title, value, className = '', icon }: MetricCardProps) {
-  return (
-    <div className={`rounded-lg bg-white p-4 shadow ${className}`}>
-      <div className="flex items-center">
-        {icon && <div className="mr-3">{icon}</div>}
-        <div>
-          <p className="text-sm font-medium text-gray-500">{title}</p>
-          <p className="mt-1 text-xl font-semibold text-gray-900">{value}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
+import { formatCurrency, formatPercent } from '@/utils/formatters';
 
 export default function SummaryMetrics() {
   const { state } = useData();
-  const { summaryData } = state;
+  const { summaryMetrics } = state.chartData;
+  
+  const netFundingPercentage = summaryMetrics.totalAllocations > 0 
+    ? (summaryMetrics.netFunding / summaryMetrics.totalAllocations) * 100 
+    : 0;
+  
+  const metrics = [
+    {
+      title: 'Total Allocations',
+      value: formatCurrency(summaryMetrics.totalAllocations),
+      description: 'Total COVID-19 funding allocated',
+      className: 'bg-allocation-light'
+    },
+    {
+      title: 'Total Deallocations',
+      value: formatCurrency(summaryMetrics.totalDeallocations),
+      description: 'Total COVID-19 funding deallocated',
+      className: 'bg-deallocation-light'
+    },
+    {
+      title: 'Net Funding',
+      value: formatCurrency(summaryMetrics.netFunding),
+      description: `${formatPercent(netFundingPercentage)} of allocations`,
+      className: 'bg-primary-50'
+    },
+    {
+      title: 'Emergency Funding',
+      value: formatCurrency(summaryMetrics.totalEmergencyFunding),
+      description: 'COVID-19 emergency response funding',
+      className: 'bg-blue-50'
+    }
+  ];
   
   return (
     <div>
       <h2 className="text-lg font-medium mb-4">Summary Metrics</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        <MetricCard
-          title="Total Allocations"
-          value={formatCurrency(summaryData.totalAllocations)}
-          className="border-l-4 border-green-500"
-        />
-        <MetricCard
-          title="Total Deallocations"
-          value={formatCurrency(summaryData.totalDeallocations)}
-          className="border-l-4 border-red-500"
-        />
-        <MetricCard
-          title="Total Outlays"
-          value={formatCurrency(summaryData.totalOutlays)}
-          className="border-l-4 border-blue-500"
-        />
-        <MetricCard
-          title="Recipients"
-          value={formatNumber(summaryData.recipientCount)}
-        />
-        <MetricCard
-          title="Programs"
-          value={formatNumber(summaryData.programCount)}
-        />
-        <MetricCard
-          title="States"
-          value={formatNumber(summaryData.stateCount)}
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {metrics.map((metric, i) => (
+          <div 
+            key={i} 
+            className={`p-4 rounded-lg ${metric.className} border border-gray-200`}
+          >
+            <h3 className="text-sm font-medium text-gray-500">{metric.title}</h3>
+            <p className="text-2xl font-bold my-1">{metric.value}</p>
+            <p className="text-xs text-gray-600">{metric.description}</p>
+          </div>
+        ))}
       </div>
     </div>
   );

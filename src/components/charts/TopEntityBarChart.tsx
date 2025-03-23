@@ -1,19 +1,21 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { 
-  BarChart, 
-  Bar, 
   XAxis, 
   YAxis, 
   CartesianGrid, 
   Tooltip, 
   Legend, 
-  ResponsiveContainer,
   LabelList 
 } from 'recharts';
 import { useData } from '@/context/DataContext';
 import { formatCurrency, truncateString } from '@/utils/formatters';
+
+// Dynamically import the chart components
+const BarChart = dynamic(() => import('recharts').then(mod => mod.BarChart), { ssr: false });
+const Bar = dynamic(() => import('recharts').then(mod => mod.Bar), { ssr: false });
 
 interface TopEntityBarChartProps {
   entityType: 'recipient' | 'program';
@@ -44,7 +46,7 @@ const CustomTooltip = ({ active, payload, entityType }: any) => {
   return null;
 };
 
-export default function TopEntityBarChart({ entityType }: TopEntityBarChartProps) {
+function TopEntityBarChart({ entityType }: TopEntityBarChartProps) {
   const { state, dispatch } = useData();
   const { chartData } = state;
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -81,8 +83,10 @@ export default function TopEntityBarChart({ entityType }: TopEntityBarChartProps
       <h2 className="text-lg font-medium mb-4">{title}</h2>
       <div className="h-80">
         {data.length > 0 ? (
-          <ResponsiveContainer width="100%" height="100%">
+          <div style={{ width: '100%', height: '100%' }}>
             <BarChart
+              width={500}
+              height={300}
               data={data}
               layout="vertical"
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
@@ -129,7 +133,7 @@ export default function TopEntityBarChart({ entityType }: TopEntityBarChartProps
                 />
               </Bar>
             </BarChart>
-          </ResponsiveContainer>
+          </div>
         ) : (
           <div className="flex items-center justify-center h-full bg-gray-50 rounded-lg border border-gray-200">
             <p className="text-gray-500">No data available</p>
@@ -138,4 +142,7 @@ export default function TopEntityBarChart({ entityType }: TopEntityBarChartProps
       </div>
     </div>
   );
-} 
+}
+
+// Export a dynamically loaded component with SSR disabled
+export default dynamic(() => Promise.resolve(TopEntityBarChart), { ssr: false }); 
