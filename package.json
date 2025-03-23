@@ -1,16 +1,24 @@
 {
   "name": "hhs-covid-spending",
   "version": "1.0.0",
-  "description": "I wanted to dive into the federal account data from usaspending.gov, so I started with HHS Covid-related Allocation and De-allocation in 2025 (most recent period available).",
-  "main": "index.js",
+  "description": "A dashboard for visualizing HHS COVID funding data",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/coddhisatva/HHS-COVID-Spending.git"
   },
-  "keywords": [],
+  "keywords": [
+    "hhs",
+    "covid",
+    "dashboard",
+    "nextjs",
+    "data-visualization"
+  ],
   "author": "",
   "license": "ISC",
   "bugs": {
@@ -26,6 +34,7 @@
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
     "@types/topojson-client": "^3.1.5",
+    "@types/uuid": "^10.0.0",
     "clsx": "^2.1.1",
     "d3": "^7.9.0",
     "d3-geo": "^3.1.1",
@@ -37,7 +46,8 @@
     "recharts": "^2.15.1",
     "tailwind-merge": "^3.0.2",
     "topojson-client": "^3.1.0",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
