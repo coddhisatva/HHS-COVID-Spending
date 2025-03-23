@@ -3,19 +3,18 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { 
+  BarChart,
+  Bar,
   XAxis, 
   YAxis, 
   CartesianGrid, 
   Tooltip, 
   Legend, 
-  LabelList 
+  LabelList,
+  ResponsiveContainer, 
 } from 'recharts';
 import { useData } from '@/context/DataContext';
 import { formatCurrency, truncateString } from '@/utils/formatters';
-
-// Dynamically import the chart components
-const BarChart = dynamic(() => import('recharts').then(mod => mod.BarChart), { ssr: false });
-const Bar = dynamic(() => import('recharts').then(mod => mod.Bar), { ssr: false });
 
 interface TopEntityBarChartProps {
   entityType: 'recipient' | 'program';
@@ -83,10 +82,8 @@ function TopEntityBarChart({ entityType }: TopEntityBarChartProps) {
       <h2 className="text-lg font-medium mb-4">{title}</h2>
       <div className="h-80">
         {data.length > 0 ? (
-          <div style={{ width: '100%', height: '100%' }}>
+          <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              width={500}
-              height={300}
               data={data}
               layout="vertical"
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
@@ -133,7 +130,7 @@ function TopEntityBarChart({ entityType }: TopEntityBarChartProps) {
                 />
               </Bar>
             </BarChart>
-          </div>
+          </ResponsiveContainer>
         ) : (
           <div className="flex items-center justify-center h-full bg-gray-50 rounded-lg border border-gray-200">
             <p className="text-gray-500">No data available</p>
@@ -144,5 +141,5 @@ function TopEntityBarChart({ entityType }: TopEntityBarChartProps) {
   );
 }
 
-// Export a dynamically loaded component with SSR disabled
+// Use dynamic import only for the whole component
 export default dynamic(() => Promise.resolve(TopEntityBarChart), { ssr: false }); 
