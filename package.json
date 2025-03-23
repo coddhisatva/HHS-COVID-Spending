@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/coddhisatva/HHS-COVID-Spending#readme",
   "dependencies": {
+    "@tailwindcss/postcss": "^4.0.15",
     "@tanstack/react-table": "^8.21.2",
     "@tanstack/react-virtual": "^3.13.4",
     "@types/d3": "^7.4.3",
