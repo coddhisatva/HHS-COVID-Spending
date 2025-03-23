@@ -1,4 +1,8 @@
 import { Suspense } from 'react';
+import FilterPanel from '@/components/filters/FilterPanel';
+import SummaryMetrics from '@/components/dashboard/SummaryMetrics';
+import EmergencyFundingPieChart from '@/components/charts/EmergencyFundingPieChart';
+import TopEntityBarChart from '@/components/charts/TopEntityBarChart';
 
 export default function HomePage() {
   return (
@@ -18,29 +22,38 @@ export default function HomePage() {
             {/* Sidebar */}
             <div className="lg:col-span-3 bg-white p-4 rounded-lg shadow">
               <h2 className="text-xl font-semibold mb-4">Filters</h2>
-              <p className="text-gray-500">Filter controls will go here</p>
+              <FilterPanel />
             </div>
             
             {/* Main content area */}
             <div className="lg:col-span-9 space-y-6">
               {/* Key metrics */}
               <div className="bg-white p-4 rounded-lg shadow">
-                <h2 className="text-xl font-semibold mb-4">Key Metrics</h2>
-                <p className="text-gray-500">Summary metrics will go here</p>
+                <SummaryMetrics />
               </div>
               
               {/* Visualization area */}
-              <div className="bg-white p-4 rounded-lg shadow">
-                <h2 className="text-xl font-semibold mb-4">Visualizations</h2>
-                <div className="h-64 flex items-center justify-center bg-gray-100 rounded">
-                  <p className="text-gray-500">Charts and maps will go here</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Emergency Funding Pie Chart */}
+                <div className="bg-white p-4 rounded-lg shadow">
+                  <EmergencyFundingPieChart />
+                </div>
+                
+                {/* Top Recipients Bar Chart */}
+                <div className="bg-white p-4 rounded-lg shadow">
+                  <TopEntityBarChart entityType="recipient" />
+                </div>
+                
+                {/* Top Programs Bar Chart */}
+                <div className="bg-white p-4 rounded-lg shadow md:col-span-2">
+                  <TopEntityBarChart entityType="program" />
                 </div>
               </div>
               
               {/* Data table */}
               <div className="bg-white p-4 rounded-lg shadow">
                 <h2 className="text-xl font-semibold mb-4">Data Explorer</h2>
-                <p className="text-gray-500">Data table will go here</p>
+                <p className="text-gray-500">Data table will be implemented in the next phase</p>
               </div>
             </div>
           </div>
