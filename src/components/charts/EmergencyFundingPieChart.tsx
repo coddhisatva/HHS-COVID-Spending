@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { useData } from '@/context/DataContext';
 import { EmergencyFundingAct } from '@/types/data';
@@ -16,17 +16,6 @@ const COLORS = [
   '#82CA9D', // Other
   '#AAAAAA', // None
 ];
-
-// Mapping of emergency funding acts to colors
-const FUNDING_COLORS: Record<EmergencyFundingAct, string> = {
-  'CARES Act': COLORS[0],
-  'American Rescue Plan': COLORS[1],
-  'COVID-19 Supplemental': COLORS[2],
-  'Paycheck Protection Program': COLORS[3],
-  'Families First Coronavirus Response Act': COLORS[4],
-  'Other': COLORS[5],
-  'None': COLORS[6],
-};
 
 // Custom tooltip component for the pie chart
 const CustomTooltip = ({ active, payload }: any) => {
@@ -46,81 +35,83 @@ const CustomTooltip = ({ active, payload }: any) => {
 
 export default function EmergencyFundingPieChart() {
   const { state, dispatch } = useData();
-  const { filteredRecords } = state;
+  const { chartData } = state;
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   
-  // Process data for the pie chart
-  const chartData = useMemo(() => {
-    // Group by emergency funding act
-    const grouped = filteredRecords.reduce((acc, record) => {
-      const act = record.emergencyFunding;
-      const amount = record.obligationAmount > 0 ? record.obligationAmount : 0; // Only include positive allocations
-      
-      if (!acc[act]) {
-        acc[act] = 0;
-      }
-      
-      acc[act] += amount;
-      return acc;
-    }, {} as Record<EmergencyFundingAct, number>);
+  const handlePieClick = (data: any, index: number) => {
+    setActiveIndex(index === activeIndex ? null : index);
     
-    // Convert to array format for Recharts
-    const total = Object.values(grouped).reduce((sum, value) => sum + value, 0);
-    
-    return Object.entries(grouped)
-      .filter(([_, value]) => value > 0)
-      .map(([name, value]) => ({
-        name: name as EmergencyFundingAct,
-        value,
-        percentage: value / total,
-        color: FUNDING_COLORS[name as EmergencyFundingAct] || '#AAAAAA'
-      }))
-      .sort((a, b) => b.value - a.value); // Sort by value in descending order
-  }, [filteredRecords]);
-  
-  // Handle pie segment click
-  const handlePieClick = (data: any) => {
-    if (data && data.name) {
-      // Add or remove the clicked funding act from the filter
-      const act = data.name as EmergencyFundingAct;
-      const currentFunding = state.filterState.emergencyFunding;
-      
-      let newFunding: EmergencyFundingAct[];
-      
-      if (currentFunding.includes(act)) {
-        // Remove if already selected
-        newFunding = currentFunding.filter(item => item !== act);
-      } else {
-        // Add if not already selected
-        newFunding = [...currentFunding, act];
-      }
-      
+    if (data && data.id) {
+      // Filter the dashboard based on clicked segment
       dispatch({
         type: 'SET_FILTER',
-        payload: { emergencyFunding: newFunding }
+        payload: { 
+          emergencyFunding: index === activeIndex ? [] : [data.id]
+        }
       });
     }
+  };
+  
+  const handlePieMouseEnter = (_: any, index: number) => {
+    setActiveIndex(index);
+  };
+  
+  const handlePieMouseLeave = () => {
+    setActiveIndex(null);
   };
   
   return (
     <div className="h-full">
       <h2 className="text-lg font-medium mb-4">Distribution by Emergency Funding Act</h2>
       <div className="h-80">
-        {chartData.length > 0 ? (
+        {chartData.emergencyFundingBreakdown.length > 0 ? (
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={chartData}
+                data={chartData.emergencyFundingBreakdown}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
                 outerRadius={80}
+                innerRadius={activeIndex !== null ? 30 : 0}
                 fill="#8884d8"
                 dataKey="value"
                 onClick={handlePieClick}
-                cursor="pointer"
+                onMouseEnter={handlePieMouseEnter}
+                onMouseLeave={handlePieMouseLeave}
+                activeIndex={activeIndex}
+                activeShape={(props) => {
+                  const RADIAN = Math.PI / 180;
+                  const { cx, cy, midAngle, innerRadius, outerRadius, startAngle, endAngle, fill, value, name, percent } = props;
+                  const sin = Math.sin(-RADIAN * midAngle);
+                  const cos = Math.cos(-RADIAN * midAngle);
+                  const sx = cx + (outerRadius + 10) * cos;
+                  const sy = cy + (outerRadius + 10) * sin;
+                  const mx = cx + (outerRadius + 30) * cos;
+                  const my = cy + (outerRadius + 30) * sin;
+                  const ex = mx + (cos >= 0 ? 1 : -1) * 22;
+                  const ey = my;
+                  const textAnchor = cos >= 0 ? 'start' : 'end';
+                  
+                  return (
+                    <g>
+                      <text x={cx} y={cy} dy={8} textAnchor="middle" fill={fill} className="text-sm">
+                        {name}
+                      </text>
+                      <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none" />
+                      <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
+                      <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} textAnchor={textAnchor} fill="#333" className="text-xs">
+                        {formatCurrency(value)}
+                      </text>
+                      <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} dy={18} textAnchor={textAnchor} fill="#999" className="text-xs">
+                        {`(${(percent * 100).toFixed(1)}%)`}
+                      </text>
+                    </g>
+                  );
+                }}
               >
-                {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                {chartData.emergencyFundingBreakdown.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip />} />

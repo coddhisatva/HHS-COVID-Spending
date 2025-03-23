@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { FilterProvider } from '@/context/FilterContext';
 import { DataProvider } from '@/context/DataContext';
 
 export const metadata: Metadata = {
@@ -15,9 +16,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <DataProvider>
-          {children}
-        </DataProvider>
+        <FilterProvider>
+          <DataProvider>
+            {children}
+          </DataProvider>
+        </FilterProvider>
       </body>
     </html>
   );

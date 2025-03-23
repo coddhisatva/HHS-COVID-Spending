@@ -3,6 +3,7 @@ import FilterPanel from '@/components/filters/FilterPanel';
 import SummaryMetrics from '@/components/dashboard/SummaryMetrics';
 import EmergencyFundingPieChart from '@/components/charts/EmergencyFundingPieChart';
 import TopEntityBarChart from '@/components/charts/TopEntityBarChart';
+import USMapChart from '@/components/charts/USMapChart';
 
 export default function HomePage() {
   return (
@@ -42,6 +43,11 @@ export default function HomePage() {
                 {/* Top Recipients Bar Chart */}
                 <div className="bg-white p-4 rounded-lg shadow">
                   <TopEntityBarChart entityType="recipient" />
+                </div>
+                
+                {/* Geographic Distribution Map */}
+                <div className="bg-white p-4 rounded-lg shadow md:col-span-2">
+                  <USMapChart />
                 </div>
                 
                 {/* Top Programs Bar Chart */}

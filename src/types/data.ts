@@ -2,9 +2,9 @@
  * Enumeration for the different financial activity types
  */
 export enum FinancialActivityType {
-  ALLOCATION = 'allocation',
-  DEALLOCATION = 'deallocation',
-  ALL = 'all'
+  ALL = 'all',
+  ALLOCATION = 'allocations',
+  DEALLOCATION = 'deallocations',
 }
 
 /**
@@ -12,8 +12,8 @@ export enum FinancialActivityType {
  */
 export enum TransactionType {
   ALL = 'all',
-  COMMITMENT = 'commitment',
-  PAYMENT = 'payment'
+  COMMITMENT = 'commitments',
+  PAYMENT = 'payments',
 }
 
 /**
@@ -22,7 +22,7 @@ export enum TransactionType {
 export enum DataSourceType {
   ALL = 'all',
   CONTRACTS = 'contracts',
-  FINANCIAL_ASSISTANCE = 'financial_assistance'
+  FINANCIAL_ASSISTANCE = 'financial_assistance',
 }
 
 /**
@@ -84,9 +84,9 @@ export interface SummaryMetrics {
  * Data for the emergency funding pie chart
  */
 export interface EmergencyFundingChartData {
-  name: EmergencyFundingAct;
+  name: string;
   value: number;
-  color: string;
+  id: EmergencyFundingAct;
 }
 
 /**
@@ -105,10 +105,11 @@ export interface FilterState {
   transactionType: TransactionType;
   dataSource: DataSourceType;
   emergencyFunding: EmergencyFundingAct[];
-  states: string[];
-  recipients: string[];
-  programs: string[];
-  dateRange: [Date | null, Date | null];
+  startDate: Date | null;
+  endDate: Date | null;
+  selectedState: string | null;
+  selectedRecipient: string | null;
+  selectedProgram: string | null;
 }
 
 /**
@@ -125,4 +126,84 @@ export interface AppDataState {
   topRecipients: BarChartData[];
   topPrograms: BarChartData[];
   filterState: FilterState;
-} 
+}
+
+/**
+ * Transaction interface
+ */
+export interface Transaction {
+  id: string;
+  recipient_name: string;
+  recipient_state: string;
+  program_name: string;
+  emergency_funding_act: EmergencyFundingAct | null;
+  transaction_date: string;
+  transaction_obligated_amount: number;
+  gross_outlay_amount: number;
+  data_source: 'contracts' | 'financial_assistance';
+}
+
+/**
+ * Summary data interface
+ */
+export interface SummaryData {
+  totalAllocations: number;
+  totalDeallocations: number;
+  totalOutlays: number;
+  recipientCount: number;
+  programCount: number;
+  stateCount: number;
+}
+
+/**
+ * Top entity data interface
+ */
+export interface TopEntityData {
+  name: string;
+  allocations: number;
+  deallocations: number;
+}
+
+/**
+ * State map data interface
+ */
+export interface StateMapData {
+  state: string;
+  amount: number;
+}
+
+/**
+ * Chart data interface
+ */
+export interface ChartData {
+  emergencyFundingBreakdown: EmergencyFundingChartData[];
+  topRecipients: TopEntityData[];
+  topPrograms: TopEntityData[];
+  stateData: StateMapData[];
+}
+
+/**
+ * Application state
+ */
+export interface AppState {
+  isLoading: boolean;
+  error: string | null;
+  filterState: FilterState;
+  transactions: Transaction[];
+  filteredTransactions: Transaction[];
+  summaryData: SummaryData;
+  chartData: ChartData;
+}
+
+/**
+ * App action types
+ */
+export type AppAction =
+  | { type: 'SET_FILTER'; payload: Partial<FilterState> }
+  | { type: 'RESET_FILTERS' }
+  | { type: 'SET_TRANSACTIONS'; payload: Transaction[] }
+  | { type: 'SET_FILTERED_TRANSACTIONS'; payload: Transaction[] }
+  | { type: 'SET_SUMMARY_DATA'; payload: SummaryData }
+  | { type: 'SET_CHART_DATA'; payload: ChartData }
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_ERROR'; payload: string | null }; 

@@ -1,143 +1,133 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from 'recharts';
+import { useState } from 'react';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer,
+  LabelList 
+} from 'recharts';
 import { useData } from '@/context/DataContext';
-import { formatCurrency } from '@/utils/formatters';
-import { getBarClass } from '@/utils/formatters';
-
-type EntityType = 'recipient' | 'program';
+import { formatCurrency, truncateString } from '@/utils/formatters';
 
 interface TopEntityBarChartProps {
-  entityType: EntityType;
-  limit?: number;
+  entityType: 'recipient' | 'program';
 }
 
-export default function TopEntityBarChart({ entityType, limit = 10 }: TopEntityBarChartProps) {
+// Custom tooltip component for the bar chart
+const CustomTooltip = ({ active, payload, entityType }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="bg-white p-3 shadow-md rounded border border-gray-200">
+        <p className="font-semibold text-gray-900">{data.name}</p>
+        <p className="text-gray-700">
+          Allocations: {formatCurrency(data.allocations)}
+        </p>
+        {data.deallocations > 0 && (
+          <p className="text-gray-700">
+            Deallocations: {formatCurrency(data.deallocations)}
+          </p>
+        )}
+        <p className="text-gray-700">
+          Net: {formatCurrency(data.allocations - data.deallocations)}
+        </p>
+      </div>
+    );
+  }
+  
+  return null;
+};
+
+export default function TopEntityBarChart({ entityType }: TopEntityBarChartProps) {
   const { state, dispatch } = useData();
-  const { filteredRecords } = state;
-  const [showAllocation, setShowAllocation] = useState(true);
+  const { chartData } = state;
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   
-  const title = entityType === 'recipient' ? 'Top Recipients' : 'Top Programs';
-  const filterProperty = entityType === 'recipient' ? 'recipients' : 'programs';
+  const data = entityType === 'recipient' 
+    ? chartData.topRecipients 
+    : chartData.topPrograms;
   
-  // Process data for the bar chart
-  const chartData = useMemo(() => {
-    // Group by entity type
-    const grouped = filteredRecords.reduce((acc, record) => {
-      const entity = entityType === 'recipient' ? record.recipient : record.program;
-      const amount = showAllocation
-        ? (record.obligationAmount > 0 ? record.obligationAmount : 0) // Only include positive allocations
-        : (record.obligationAmount < 0 ? record.obligationAmount : 0); // Only include negative deallocations
-      
-      if (!acc[entity]) {
-        acc[entity] = 0;
-      }
-      
-      acc[entity] += amount;
-      return acc;
-    }, {} as Record<string, number>);
+  const title = entityType === 'recipient' 
+    ? 'Top Recipients' 
+    : 'Top Programs';
+  
+  // Handle clicking on a bar to filter the dashboard
+  const handleBarClick = (data: any, index: number) => {
+    setActiveIndex(index === activeIndex ? null : index);
     
-    // Convert to array format for Recharts and take top N
-    return Object.entries(grouped)
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => showAllocation 
-        ? b.value - a.value // Sort allocations in descending order
-        : a.value - b.value) // Sort deallocations in ascending order (more negative first)
-      .slice(0, limit);
-  }, [filteredRecords, entityType, showAllocation, limit]);
-  
-  // Handle bar click
-  const handleBarClick = (data: any) => {
     if (data && data.name) {
-      // Add or remove the clicked entity from the filter
-      const entity = data.name;
-      const currentFilters = state.filterState[filterProperty];
+      const filterProperty = entityType === 'recipient' 
+        ? 'selectedRecipient' 
+        : 'selectedProgram';
       
-      let newFilters: string[];
-      
-      if (currentFilters.includes(entity)) {
-        // Remove if already selected
-        newFilters = currentFilters.filter(item => item !== entity);
-      } else {
-        // Add if not already selected
-        newFilters = [...currentFilters, entity];
-      }
-      
+      // Set the filter or clear it if already active
       dispatch({
         type: 'SET_FILTER',
-        payload: { [filterProperty]: newFilters }
+        payload: { 
+          [filterProperty]: index === activeIndex ? null : data.name 
+        }
       });
     }
   };
   
-  // Custom tooltip
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-3 shadow-md rounded border border-gray-200">
-          <p className="font-semibold text-gray-900">{payload[0].payload.name}</p>
-          <p className={`${getBarClass(payload[0].value)}`}>
-            {formatCurrency(Math.abs(payload[0].value))}
-          </p>
-        </div>
-      );
-    }
-    
-    return null;
-  };
-  
   return (
     <div className="h-full">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-medium">{title}</h2>
-        <div className="flex space-x-2">
-          <button
-            className={`px-3 py-1 rounded text-sm ${
-              showAllocation ? 'bg-allocation text-white' : 'bg-gray-100 text-gray-600'
-            }`}
-            onClick={() => setShowAllocation(true)}
-          >
-            Allocations
-          </button>
-          <button
-            className={`px-3 py-1 rounded text-sm ${
-              !showAllocation ? 'bg-deallocation text-white' : 'bg-gray-100 text-gray-600'
-            }`}
-            onClick={() => setShowAllocation(false)}
-          >
-            Deallocations
-          </button>
-        </div>
-      </div>
-      
+      <h2 className="text-lg font-medium mb-4">{title}</h2>
       <div className="h-80">
-        {chartData.length > 0 ? (
+        {data.length > 0 ? (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={chartData}
+              data={data}
               layout="vertical"
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
               <XAxis
                 type="number"
-                tickFormatter={(value) => formatCurrency(Math.abs(value), false)}
+                tickFormatter={(value) => formatCurrency(value)}
               />
               <YAxis
                 dataKey="name"
                 type="category"
-                width={150}
-                tick={{ fontSize: 12 }}
-                tickFormatter={(value) => value.length > 20 ? `${value.substring(0, 20)}...` : value}
+                width={120}
+                tickFormatter={(value) => truncateString(value, 15)}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip content={<CustomTooltip entityType={entityType} />} />
+              <Legend />
               <Bar
-                dataKey="value"
-                className={showAllocation ? 'allocation-bar' : 'deallocation-bar'}
+                dataKey="allocations"
+                name="Allocations"
+                fill="#4ade80"
                 onClick={handleBarClick}
-                cursor="pointer"
-              />
+                className="cursor-pointer"
+              >
+                <LabelList 
+                  dataKey="allocations" 
+                  position="right" 
+                  formatter={(value: number) => formatCurrency(value)} 
+                  style={{ fontSize: '12px' }}
+                />
+              </Bar>
+              <Bar
+                dataKey="deallocations"
+                name="Deallocations"
+                fill="#f87171"
+                onClick={handleBarClick}
+                className="cursor-pointer"
+              >
+                <LabelList 
+                  dataKey="deallocations" 
+                  position="right" 
+                  formatter={(value: number) => formatCurrency(value)} 
+                  style={{ fontSize: '12px' }}
+                />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         ) : (

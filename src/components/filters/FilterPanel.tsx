@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   FinancialActivityType,
   TransactionType,
@@ -8,6 +8,7 @@ import {
   EmergencyFundingAct
 } from '@/types/data';
 import { useData } from '@/context/DataContext';
+import DateRangePicker from './DateRangePicker';
 
 const activityTypeOptions = [
   { value: FinancialActivityType.ALL, label: 'All Activity' },
@@ -43,6 +44,11 @@ export default function FilterPanel() {
 
   // Local state for multi-select filters
   const [selectedEmergencyFunding, setSelectedEmergencyFunding] = useState<EmergencyFundingAct[]>([]);
+  
+  // Sync local state with context state
+  useEffect(() => {
+    setSelectedEmergencyFunding(filterState.emergencyFunding);
+  }, [filterState.emergencyFunding]);
   
   // Handler for activity type change
   const handleActivityTypeChange = (value: FinancialActivityType) => {
@@ -95,7 +101,7 @@ export default function FilterPanel() {
   };
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 bg-white rounded-lg shadow">
       <div>
         <h3 className="text-lg font-medium mb-3">Financial Type</h3>
         <div className="space-y-2">
@@ -107,7 +113,7 @@ export default function FilterPanel() {
                 name="activityType"
                 checked={filterState.activityType === option.value}
                 onChange={() => handleActivityTypeChange(option.value)}
-                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
               />
               <label htmlFor={`activity-${option.value}`} className="ml-2 block text-sm text-gray-700">
                 {option.label}
@@ -128,7 +134,7 @@ export default function FilterPanel() {
                 name="transactionType"
                 checked={filterState.transactionType === option.value}
                 onChange={() => handleTransactionTypeChange(option.value)}
-                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
               />
               <label htmlFor={`transaction-${option.value}`} className="ml-2 block text-sm text-gray-700">
                 {option.label}
@@ -149,7 +155,7 @@ export default function FilterPanel() {
                 name="dataSource"
                 checked={filterState.dataSource === option.value}
                 onChange={() => handleDataSourceChange(option.value)}
-                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
               />
               <label htmlFor={`source-${option.value}`} className="ml-2 block text-sm text-gray-700">
                 {option.label}
@@ -158,6 +164,8 @@ export default function FilterPanel() {
           ))}
         </div>
       </div>
+      
+      <DateRangePicker />
       
       <div>
         <h3 className="text-lg font-medium mb-3">Emergency Funding</h3>
@@ -169,7 +177,7 @@ export default function FilterPanel() {
                 id={`funding-${option.value}`}
                 checked={selectedEmergencyFunding.includes(option.value)}
                 onChange={() => handleEmergencyFundingChange(option.value)}
-                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
               <label htmlFor={`funding-${option.value}`} className="ml-2 block text-sm text-gray-700">
                 {option.label}
@@ -182,7 +190,7 @@ export default function FilterPanel() {
       <div className="pt-4">
         <button
           onClick={handleResetFilters}
-          className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+          className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           Reset All Filters
         </button>

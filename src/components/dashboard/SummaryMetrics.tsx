@@ -26,28 +26,7 @@ function MetricCard({ title, value, className = '', icon }: MetricCardProps) {
 
 export default function SummaryMetrics() {
   const { state } = useData();
-  const { summaryMetrics, filteredRecords } = state;
-  
-  // Calculate totals based on filtered records
-  const totalAllocations = filteredRecords.reduce(
-    (sum, record) => sum + (record.obligationAmount > 0 ? record.obligationAmount : 0),
-    0
-  );
-  
-  const totalDeallocations = filteredRecords.reduce(
-    (sum, record) => sum + (record.obligationAmount < 0 ? record.obligationAmount : 0),
-    0
-  );
-  
-  const totalOutlays = filteredRecords.reduce(
-    (sum, record) => sum + record.outlay,
-    0
-  );
-  
-  // Calculate unique recipients and programs
-  const uniqueRecipients = new Set(filteredRecords.map(record => record.recipient));
-  const uniquePrograms = new Set(filteredRecords.map(record => record.program));
-  const uniqueStates = new Set(filteredRecords.map(record => record.recipientState));
+  const { summaryData } = state;
   
   return (
     <div>
@@ -55,30 +34,30 @@ export default function SummaryMetrics() {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         <MetricCard
           title="Total Allocations"
-          value={formatCurrency(totalAllocations)}
-          className="border-l-4 border-allocation"
+          value={formatCurrency(summaryData.totalAllocations)}
+          className="border-l-4 border-green-500"
         />
         <MetricCard
           title="Total Deallocations"
-          value={formatCurrency(Math.abs(totalDeallocations))}
-          className="border-l-4 border-deallocation"
+          value={formatCurrency(summaryData.totalDeallocations)}
+          className="border-l-4 border-red-500"
         />
         <MetricCard
           title="Total Outlays"
-          value={formatCurrency(totalOutlays)}
-          className="border-l-4 border-primary-600"
+          value={formatCurrency(summaryData.totalOutlays)}
+          className="border-l-4 border-blue-500"
         />
         <MetricCard
           title="Recipients"
-          value={formatNumber(uniqueRecipients.size)}
+          value={formatNumber(summaryData.recipientCount)}
         />
         <MetricCard
           title="Programs"
-          value={formatNumber(uniquePrograms.size)}
+          value={formatNumber(summaryData.programCount)}
         />
         <MetricCard
           title="States"
-          value={formatNumber(uniqueStates.size)}
+          value={formatNumber(summaryData.stateCount)}
         />
       </div>
     </div>
