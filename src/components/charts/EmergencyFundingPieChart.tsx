@@ -36,17 +36,19 @@ const CustomTooltip = ({ active, payload }: any) => {
 export default function EmergencyFundingPieChart() {
   const { state, dispatch } = useData();
   const { chartData } = state;
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  // Using number instead of number | null to avoid type issues
+  const [activeIndex, setActiveIndex] = useState<number>(NaN);
   
   const handlePieClick = (data: any, index: number) => {
-    setActiveIndex(index === activeIndex ? null : index);
+    // Using NaN as a sentinel value (not equal to any number, including itself)
+    setActiveIndex(Number.isNaN(activeIndex) || activeIndex !== index ? index : NaN);
     
     if (data && data.id) {
       // Filter the dashboard based on clicked segment
       dispatch({
         type: 'SET_FILTER',
         payload: { 
-          emergencyFunding: index === activeIndex ? [] : [data.id]
+          emergencyFunding: Number.isNaN(activeIndex) || activeIndex !== index ? [data.id] : []
         }
       });
     }
@@ -57,7 +59,7 @@ export default function EmergencyFundingPieChart() {
   };
   
   const handlePieMouseLeave = () => {
-    setActiveIndex(null);
+    setActiveIndex(NaN);
   };
   
   return (
@@ -73,14 +75,15 @@ export default function EmergencyFundingPieChart() {
                 cy="50%"
                 labelLine={false}
                 outerRadius={80}
-                innerRadius={activeIndex !== null ? 30 : 0}
+                innerRadius={!Number.isNaN(activeIndex) ? 30 : 0}
                 fill="#8884d8"
                 dataKey="value"
                 onClick={handlePieClick}
                 onMouseEnter={handlePieMouseEnter}
                 onMouseLeave={handlePieMouseLeave}
-                activeIndex={activeIndex}
-                activeShape={(props) => {
+                activeIndex={Number.isNaN(activeIndex) ? undefined : activeIndex}
+                // @ts-ignore
+                activeShape={(props: any) => {
                   const RADIAN = Math.PI / 180;
                   const { cx, cy, midAngle, innerRadius, outerRadius, startAngle, endAngle, fill, value, name, percent } = props;
                   const sin = Math.sin(-RADIAN * midAngle);

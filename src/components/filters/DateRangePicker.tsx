@@ -70,7 +70,7 @@ export default function DateRangePicker() {
             selectsEnd
             startDate={startDate}
             endDate={endDate}
-            minDate={startDate}
+            minDate={startDate || undefined}
             className="w-full border border-gray-300 rounded-md py-2 px-3 text-sm"
             placeholderText="Select end date"
             dateFormat="MM/dd/yyyy"
