@@ -2,8 +2,6 @@
 
 import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 import {
-  AppState,
-  AppAction,
   FinancialActivityType,
   TransactionType,
   DataSourceType,
@@ -11,6 +9,7 @@ import {
   Transaction,
   SummaryData
 } from '@/types/data';
+import { AppState as ImportedAppState } from '@/types/data';
 
 // Define the shape of our chart data
 export interface ChartData {
@@ -231,6 +230,17 @@ const initialState: AppState = {
   summaryData: mockSummaryData,
   chartData: mockChartData,
 };
+
+// Create a local AppAction type that uses our ChartData interface
+type AppAction =
+  | { type: 'SET_FILTER'; payload: Partial<FilterState> }
+  | { type: 'RESET_FILTERS' }
+  | { type: 'SET_TRANSACTIONS'; payload: Transaction[] }
+  | { type: 'SET_FILTERED_TRANSACTIONS'; payload: Transaction[] }
+  | { type: 'SET_SUMMARY_DATA'; payload: SummaryData }
+  | { type: 'SET_CHART_DATA'; payload: ChartData }
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_ERROR'; payload: string | null };
 
 // Reducer function
 function dataReducer(state: AppState, action: AppAction): AppState {
