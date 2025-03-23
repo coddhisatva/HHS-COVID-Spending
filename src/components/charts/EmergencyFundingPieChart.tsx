@@ -6,6 +6,13 @@ import { Cell, Tooltip, Legend, ResponsiveContainer, PieChart, Pie } from 'recha
 import { useData } from '@/context/DataContext';
 import { formatCurrency, formatPercent } from '@/utils/formatters';
 
+// Define the data structure for emergency funding
+interface EmergencyFundingData {
+  name: string;
+  value: number;
+  percentage: number;
+}
+
 // Custom colors for the pie chart segments
 const COLORS = [
   '#4f46e5', // indigo
@@ -31,7 +38,14 @@ const CustomTooltip = ({ active, payload }: any) => {
 
 function EmergencyFundingPieChart() {
   const { state } = useData();
-  const { emergencyFunding } = state.chartData;
+  // Use emergencyFundingBreakdown as a fallback for emergencyFunding
+  const fundingData: EmergencyFundingData[] = state.chartData.emergencyFunding || 
+    (state.chartData.emergencyFundingBreakdown || []).map(item => ({
+      name: item.name,
+      value: item.value,
+      percentage: 0 // Calculate percentage if needed
+    }));
+  
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   
   const handlePieClick = (data: any, index: number) => {
@@ -63,11 +77,11 @@ function EmergencyFundingPieChart() {
     <div className="h-full">
       <h2 className="text-lg font-medium mb-4">Emergency Funding Breakdown</h2>
       <div className="h-80">
-        {emergencyFunding && emergencyFunding.length > 0 ? (
+        {fundingData && fundingData.length > 0 ? (
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={emergencyFunding}
+                data={fundingData}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
@@ -79,7 +93,7 @@ function EmergencyFundingPieChart() {
                 isAnimationActive={true}
                 animationDuration={800}
               >
-                {emergencyFunding.map((entry: any, index: number) => (
+                {fundingData.map((entry: any, index: number) => (
                   <Cell 
                     key={`cell-${index}`} 
                     fill={COLORS[index % COLORS.length]} 

@@ -9,9 +9,64 @@ import {
   DataSourceType,
   FilterState,
   Transaction,
-  SummaryData,
-  ChartData
+  SummaryData
 } from '@/types/data';
+
+// Define the shape of our chart data
+export interface ChartData {
+  summaryMetrics: {
+    totalAllocations: number;
+    totalDeallocations: number;
+    netFunding: number;
+    totalEmergencyFunding: number;
+  };
+  topRecipients: Array<{
+    name: string;
+    allocations: number;
+    deallocations: number;
+  }>;
+  topPrograms: Array<{
+    name: string;
+    allocations: number;
+    deallocations: number;
+  }>;
+  timeSeriesData: Array<{
+    date: string;
+    allocations: number;
+    deallocations: number;
+  }>;
+  emergencyFunding: Array<{
+    name: string;
+    value: number;
+    percentage: number;
+  }>;
+  emergencyFundingBreakdown?: Array<{
+    name: string;
+    value: number;
+    id: string;
+  }>;
+  stateData?: Array<{
+    state: string;
+    amount: number;
+  }>;
+  mapData: Array<{
+    stateAbbr: string;
+    stateName: string;
+    allocations: number;
+    deallocations: number;
+  }>;
+}
+
+// Create a local AppState type that uses our ChartData interface
+interface AppState {
+  isLoading: boolean;
+  error: string | null;
+  filterState: FilterState;
+  transactions: Transaction[];
+  filteredTransactions: Transaction[];
+  summaryData: SummaryData;
+  chartData: ChartData;
+}
 
 // Initial filter state
 const initialFilterState: FilterState = {
@@ -38,6 +93,20 @@ const mockSummaryData: SummaryData = {
 
 // Mock chart data
 const mockChartData: ChartData = {
+  summaryMetrics: {
+    totalAllocations: 173047914677,
+    totalDeallocations: 3235800720,
+    netFunding: 169812113957,
+    totalEmergencyFunding: 140000000000,
+  },
+  emergencyFunding: [
+    { name: 'CARES Act', value: 78000000000, percentage: 55.7 },
+    { name: 'American Rescue Plan', value: 59000000000, percentage: 42.1 },
+    { name: 'COVID-19 Supplemental', value: 22000000000, percentage: 15.7 },
+    { name: 'Paycheck Protection Program', value: 10000000000, percentage: 7.1 },
+    { name: 'Families First Coronavirus Response Act', value: 5000000000, percentage: 3.6 },
+    { name: 'Other', value: 3000000000, percentage: 2.1 },
+  ],
   emergencyFundingBreakdown: [
     { name: 'CARES Act', value: 78000000000, id: 'CARES Act' },
     { name: 'American Rescue Plan', value: 59000000000, id: 'American Rescue Plan' },
@@ -69,6 +138,21 @@ const mockChartData: ChartData = {
     { name: 'Substance Abuse Treatment', allocations: 7000000000, deallocations: 70000000 },
     { name: 'Child Care Development Block Grant', allocations: 6000000000, deallocations: 60000000 },
     { name: 'Telehealth Initiatives', allocations: 5000000000, deallocations: 50000000 },
+  ],
+  timeSeriesData: [
+    { date: "2020-03", allocations: 52000000000, deallocations: 1800000000 },
+    { date: "2020-04", allocations: 38000000000, deallocations: 2500000000 },
+    { date: "2020-05", allocations: 12000000000, deallocations: 1300000000 },
+    { date: "2020-06", allocations: 8500000000, deallocations: 950000000 },
+    { date: "2020-07", allocations: 6800000000, deallocations: 750000000 },
+    { date: "2020-08", allocations: 5200000000, deallocations: 600000000 },
+    { date: "2020-09", allocations: 4900000000, deallocations: 550000000 },
+    { date: "2020-10", allocations: 7800000000, deallocations: 700000000 },
+    { date: "2020-11", allocations: 10500000000, deallocations: 950000000 },
+    { date: "2020-12", allocations: 15800000000, deallocations: 1200000000 },
+    { date: "2021-01", allocations: 12500000000, deallocations: 1100000000 },
+    { date: "2021-02", allocations: 9200000000, deallocations: 850000000 },
+    { date: "2021-03", allocations: 8700000000, deallocations: 750000000 },
   ],
   stateData: [
     { state: 'CA', amount: 15000000000 },
@@ -123,6 +207,18 @@ const mockChartData: ChartData = {
     { state: 'WY', amount: 80000000 },
     { state: 'DC', amount: 350000000 },
   ],
+  mapData: [
+    { stateAbbr: "NY", stateName: "New York", allocations: 18500000000, deallocations: 1200000000 },
+    { stateAbbr: "CA", stateName: "California", allocations: 16800000000, deallocations: 950000000 },
+    { stateAbbr: "TX", stateName: "Texas", allocations: 12300000000, deallocations: 780000000 },
+    { stateAbbr: "FL", stateName: "Florida", allocations: 11700000000, deallocations: 650000000 },
+    { stateAbbr: "IL", stateName: "Illinois", allocations: 8900000000, deallocations: 450000000 },
+    { stateAbbr: "PA", stateName: "Pennsylvania", allocations: 7200000000, deallocations: 380000000 },
+    { stateAbbr: "OH", stateName: "Ohio", allocations: 6800000000, deallocations: 350000000 },
+    { stateAbbr: "GA", stateName: "Georgia", allocations: 6500000000, deallocations: 320000000 },
+    { stateAbbr: "MI", stateName: "Michigan", allocations: 6100000000, deallocations: 300000000 },
+    { stateAbbr: "NJ", stateName: "New Jersey", allocations: 5800000000, deallocations: 280000000 },
+  ]
 };
 
 // Initial app state

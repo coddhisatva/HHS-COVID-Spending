@@ -15,10 +15,27 @@ interface USMapChartProps {
   height?: number;
 }
 
+interface StateData {
+  stateAbbr: string;
+  stateName: string;
+  allocations: number;
+  deallocations: number;
+}
+
 // Create a component that will only run on the client side
 function USMapChart({ width = 800, height = 500 }: USMapChartProps) {
   const { state } = useData();
-  const { mapData } = state.chartData;
+  // Use stateData as a fallback if mapData doesn't exist
+  const stateData = state.chartData.stateData || [];
+  const mapData: StateData[] = state.chartData.mapData || 
+    // Transform stateData to match mapData structure if necessary
+    stateData.map(item => ({
+      stateAbbr: item.state,
+      stateName: '',
+      allocations: item.amount,
+      deallocations: 0
+    }));
+  
   const mapRef = useRef<SVGSVGElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [usTopoJSON, setUsTopoJSON] = useState<any>(null);
@@ -66,7 +83,7 @@ function USMapChart({ width = 800, height = 500 }: USMapChartProps) {
         .projection(projection);
       
       // Calculate the maximum allocation for color scale
-      const maxAllocation = d3.max(mapData, (d: any) => d.allocations) || 0;
+      const maxAllocation = d3.max(mapData, (d: StateData) => d.allocations) || 0;
       
       // Create a color scale
       const colorScale = d3.scaleLinear<string>()
@@ -83,7 +100,7 @@ function USMapChart({ width = 800, height = 500 }: USMapChartProps) {
         .append('path')
         .attr('d', path as any)
         .attr('fill', (d: any) => {
-          const stateData = mapData.find((state: any) => 
+          const stateData = mapData.find((state: StateData) => 
             state.stateAbbr === d.properties.abbr ||
             state.stateName === d.properties.name
           );
@@ -95,7 +112,7 @@ function USMapChart({ width = 800, height = 500 }: USMapChartProps) {
         .attr('stroke-width', 0.5)
         .attr('cursor', 'pointer')
         .on('mouseover', function(event: any, d: any) {
-          const stateData = mapData.find((state: any) => 
+          const stateData = mapData.find((state: StateData) => 
             state.stateAbbr === d.properties.abbr ||
             state.stateName === d.properties.name
           );
@@ -106,87 +123,39 @@ function USMapChart({ width = 800, height = 500 }: USMapChartProps) {
             const tooltip = tooltipRef.current;
             tooltip.style.display = 'block';
             tooltip.style.left = `${event.pageX + 10}px`;
-    // Convert TopoJSON to GeoJSON
-    const us = feature(usTopoJSON, usTopoJSON.objects.states) as GeoPermissibleObjects;
-    
-    // Create a projection and path generator
-    const projection = d3.geoAlbersUsa()
-      .fitSize([width, height], us);
-    
-    const path = d3.geoPath()
-      .projection(projection);
-    
-    // Calculate the maximum allocation for color scale
-    const maxAllocation = d3.max(mapData, (d: any) => d.allocations) || 0;
-    
-    // Create a color scale
-    const colorScale = d3.scaleLinear<string>()
-      .domain([0, maxAllocation])
-      .range(['#e5f5e0', '#31a354']);
-    
-    // Create a group for the states
-    const g = svg.append('g');
-    
-    // Add state paths to the map
-    g.selectAll('path')
-      .data((us as any).features)
-      .enter()
-      .append('path')
-      .attr('d', path as any)
-      .attr('fill', (d: any) => {
-        const stateData = mapData.find((state: any) => 
-          state.stateAbbr === d.properties.abbr ||
-          state.stateName === d.properties.name
-        );
-        return stateData 
-          ? colorScale(stateData.allocations) 
-          : '#f0f0f0';
-      })
-      .attr('stroke', '#fff')
-      .attr('stroke-width', 0.5)
-      .attr('cursor', 'pointer')
-      .on('mouseover', function(event: MouseEvent, d: any) {
-        const stateData = mapData.find((state: any) => 
-          state.stateAbbr === d.properties.abbr ||
-          state.stateName === d.properties.name
-        );
-        
-        setHoveredState(d.properties.name);
-        
-        if (tooltipRef.current) {
-          const tooltip = tooltipRef.current;
-          tooltip.style.display = 'block';
-          tooltip.style.left = `${event.pageX + 10}px`;
-          tooltip.style.top = `${event.pageY - 30}px`;
+            tooltip.style.top = `${event.pageY - 30}px`;
+            
+            tooltip.innerHTML = `
+              <div class="font-semibold">${d.properties.name}</div>
+              <div>Allocations: ${formatCurrency(stateData?.allocations || 0)}</div>
+              <div>Deallocations: ${formatCurrency(stateData?.deallocations || 0)}</div>
+            `;
+          }
           
-          tooltip.innerHTML = `
-            <div class="font-semibold">${d.properties.name}</div>
-            <div>Allocations: ${formatCurrency(stateData?.allocations || 0)}</div>
-            <div>Deallocations: ${formatCurrency(stateData?.deallocations || 0)}</div>
-          `;
-        }
-        
-        d3.select(this)
-          .attr('stroke', '#000')
-          .attr('stroke-width', 1.5);
-      })
-      .on('mousemove', function(event: MouseEvent) {
-        if (tooltipRef.current) {
-          tooltipRef.current.style.left = `${event.pageX + 10}px`;
-          tooltipRef.current.style.top = `${event.pageY - 30}px`;
-        }
-      })
-      .on('mouseout', function() {
-        setHoveredState(null);
-        
-        if (tooltipRef.current) {
-          tooltipRef.current.style.display = 'none';
-        }
-        
-        d3.select(this)
-          .attr('stroke', '#fff')
-          .attr('stroke-width', 0.5);
-      });
+          d3.select(this)
+            .attr('stroke', '#000')
+            .attr('stroke-width', 1.5);
+        })
+        .on('mousemove', function(event: any) {
+          if (tooltipRef.current) {
+            tooltipRef.current.style.left = `${event.pageX + 10}px`;
+            tooltipRef.current.style.top = `${event.pageY - 30}px`;
+          }
+        })
+        .on('mouseout', function() {
+          setHoveredState(null);
+          
+          if (tooltipRef.current) {
+            tooltipRef.current.style.display = 'none';
+          }
+          
+          d3.select(this)
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 0.5);
+        });
+    } catch (err) {
+      console.error('Error drawing map:', err);
+    }
   };
   
   if (loading) {
@@ -224,5 +193,5 @@ function USMapChart({ width = 800, height = 500 }: USMapChartProps) {
   );
 }
 
-// Export a dynamically loaded component with SSR disabled
+// Use dynamic import only for the whole component
 export default dynamic(() => Promise.resolve(USMapChart), { ssr: false }); 
