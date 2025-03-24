@@ -86,7 +86,15 @@ export default function EmergencyFundingPieChart() {
   
   return (
     <div className="h-full">
-      <h2 className="text-xl font-medium mb-4 text-gray-800">Emergency Funding Breakdown</h2>
+      <h2 className="text-xl font-medium mb-4 text-gray-800 flex items-center">
+        <span className="inline-flex w-5 h-5 mr-2 text-purple-600">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+            <path d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+          </svg>
+        </span>
+        Emergency Funding Breakdown
+      </h2>
       <div className="h-[350px]">
         {enhancedData && enhancedData.length > 0 ? (
           <ResponsiveContainer width="100%" height="100%">
@@ -140,12 +148,26 @@ export default function EmergencyFundingPieChart() {
       
       {/* Summary statistics below the chart */}
       <div className="mt-4 grid grid-cols-2 gap-4">
-        <div className="bg-blue-50 rounded-md p-3 border-l-4 border-blue-500">
-          <p className="text-sm text-gray-600">Total Emergency Funding</p>
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3 border-l-4 border-blue-500 shadow-sm">
+          <p className="text-sm text-gray-600 flex items-center">
+            <span className="inline-flex w-4 h-4 mr-1 text-blue-500">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8v14" />
+              </svg>
+            </span>
+            Total Emergency Funding
+          </p>
           <p className="text-lg font-bold text-gray-900">{formatCurrency(total)}</p>
         </div>
-        <div className="bg-green-50 rounded-md p-3 border-l-4 border-green-500">
-          <p className="text-sm text-gray-600">Largest Program</p>
+        <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-3 border-l-4 border-green-500 shadow-sm">
+          <p className="text-sm text-gray-600 flex items-center">
+            <span className="inline-flex w-4 h-4 mr-1 text-green-500">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+              </svg>
+            </span>
+            Largest Program
+          </p>
           <p className="text-lg font-bold text-gray-900">
             {enhancedData.length > 0 ? 
               enhancedData.reduce((max, item) => item.value > max.value ? item : max, enhancedData[0]).name 
