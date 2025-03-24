@@ -134,12 +134,7 @@ export default function TopEntityBarChart({ entityType }: TopEntityBarChartProps
   
   return (
     <div className="h-full">
-      <h2 className="text-xl font-medium mb-4 text-gray-800 flex items-center">
-        <span className="inline-flex w-5 h-5 mr-2 text-blue-600">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-        </span>
+      <h2 className="text-xl font-medium mb-4 text-gray-800">
         {title}
         {entityType === 'recipient' && 
           <span className="text-sm font-normal text-gray-500 ml-2">by allocation amount</span>
@@ -237,23 +232,13 @@ export default function TopEntityBarChart({ entityType }: TopEntityBarChartProps
       {/* Summary statistics */}
       <div className="mt-4 grid grid-cols-2 gap-4">
         <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3 border-l-4 border-blue-500 shadow-sm">
-          <p className="text-sm text-gray-600 flex items-center">
-            <span className="inline-flex w-4 h-4 mr-1 text-blue-500">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-            </span>
+          <p className="text-sm text-gray-600">
             Total Allocations
           </p>
           <p className="text-lg font-bold text-gray-900">{formatCurrency(totalAllocations)}</p>
         </div>
         <div className="bg-gradient-to-r from-red-50 to-red-100 rounded-lg p-3 border-l-4 border-red-500 shadow-sm">
-          <p className="text-sm text-gray-600 flex items-center">
-            <span className="inline-flex w-4 h-4 mr-1 text-red-500">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 12H4" />
-              </svg>
-            </span>
+          <p className="text-sm text-gray-600">
             Total Deallocations
           </p>
           <p className="text-lg font-bold text-gray-900">{formatCurrency(totalDeallocations)}</p>
