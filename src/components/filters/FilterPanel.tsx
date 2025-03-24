@@ -101,8 +101,8 @@ export default function FilterPanel() {
   };
   
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4" style={{ width: '100%' }}>
-      <div>
+    <>
+      <div className="filter-section">
         <h3 className="text-lg font-medium mb-2">Financial Type</h3>
         <div className="flex flex-col">
           {activityTypeOptions.map(option => (
@@ -123,7 +123,7 @@ export default function FilterPanel() {
         </div>
       </div>
       
-      <div>
+      <div className="filter-section">
         <h3 className="text-lg font-medium mb-2">Transaction Type</h3>
         <div className="flex flex-col">
           {transactionTypeOptions.map(option => (
@@ -144,7 +144,7 @@ export default function FilterPanel() {
         </div>
       </div>
       
-      <div>
+      <div className="filter-section">
         <h3 className="text-lg font-medium mb-2">Data Source</h3>
         <div className="flex flex-col">
           {dataSourceOptions.map(option => (
@@ -165,12 +165,12 @@ export default function FilterPanel() {
         </div>
       </div>
       
-      <div>
+      <div className="filter-section">
         <h3 className="text-lg font-medium mb-2">Date Range</h3>
         <DateRangePicker />
       </div>
       
-      <div className="lg:col-span-2">
+      <div className="filter-section" style={{ gridColumn: 'span 2' }}>
         <h3 className="text-lg font-medium mb-2">Emergency Funding</h3>
         <div className="grid grid-cols-2 gap-x-4 gap-y-1">
           {emergencyFundingOptions.map(option => (
@@ -190,14 +190,15 @@ export default function FilterPanel() {
         </div>
       </div>
       
-      <div className="sm:col-span-1 md:self-end">
+      <div className="filter-section">
         <button
           onClick={handleResetFilters}
           className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          style={{ marginTop: '1.5rem' }}
         >
           Reset All Filters
         </button>
       </div>
-    </div>
+    </>
   );
 } 

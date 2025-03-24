@@ -50,11 +50,13 @@ function DashboardContent() {
       
       <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 md:px-8 py-4">
         {/* Filters bar - Horizontal at the top */}
-        <div className="mb-4 bg-white rounded-lg shadow p-4 border border-blue-100">
+        <div className="mb-4 bg-white rounded-lg shadow p-4 border border-blue-100" style={{ display: 'block', width: '100%' }}>
           <h2 className="text-lg font-semibold mb-3 text-gray-800 border-b pb-2">
             Dashboard Filters
           </h2>
-          <FilterPanel />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', width: '100%' }}>
+            <FilterPanel />
+          </div>
         </div>
         
         {/* Summary Metrics - Always visible at the top, full width */}
