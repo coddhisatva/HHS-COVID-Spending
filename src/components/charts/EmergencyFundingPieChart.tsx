@@ -47,7 +47,7 @@ const renderCustomizedLegend = (props: any) => {
   const { payload } = props;
   
   return (
-    <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2">
+    <div className="mt-4 flex flex-wrap justify-center gap-x-6 gap-y-2">
       {payload.map((entry: any, index: number) => (
         <div key={`item-${index}`} className="flex items-center">
           <div 
@@ -92,8 +92,8 @@ export default function EmergencyFundingPieChart() {
       </h2>
       
       {enhancedData && enhancedData.length > 0 ? (
-        <div className="flex flex-col md:flex-row">
-          <div className="flex-grow" style={{ height: '300px' }}>
+        <div className="flex flex-col items-center">
+          <div className="w-full max-w-md mx-auto" style={{ height: '300px' }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -132,8 +132,8 @@ export default function EmergencyFundingPieChart() {
             </ResponsiveContainer>
           </div>
           
-          <div className="mt-4 md:mt-0 md:ml-4 md:w-1/3 pl-2">
-            <h3 className="text-sm font-semibold text-gray-700 mb-2">Legend</h3>
+          <div className="mt-6 w-full">
+            <h3 className="text-sm font-semibold text-gray-700 mb-2 text-center">Legend</h3>
             {renderCustomizedLegend({ payload: enhancedData.map((item, index) => ({
               value: item.name,
               color: COLORS[index % COLORS.length]
@@ -148,7 +148,7 @@ export default function EmergencyFundingPieChart() {
       
       {/* Summary statistics below the chart */}
       {enhancedData && enhancedData.length > 0 && (
-        <div className="mt-4 grid grid-cols-2 gap-4">
+        <div className="mt-6 grid grid-cols-2 gap-4 max-w-2xl mx-auto">
           <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3 border-l-4 border-blue-500 shadow-sm">
             <p className="text-sm text-gray-600">
               Total Emergency Funding

@@ -101,10 +101,10 @@ export default function FilterPanel() {
   };
   
   return (
-    <div className="space-y-6 p-4 bg-white rounded-lg shadow">
-      <div>
-        <h3 className="text-lg font-medium mb-3">Financial Type</h3>
-        <div className="space-y-2">
+    <div className="flex flex-col md:flex-row md:flex-wrap gap-4 justify-between">
+      <div className="md:w-auto">
+        <h3 className="text-lg font-medium mb-2">Financial Type</h3>
+        <div className="flex flex-col">
           {activityTypeOptions.map(option => (
             <div key={option.value} className="flex items-center">
               <input
@@ -123,9 +123,9 @@ export default function FilterPanel() {
         </div>
       </div>
       
-      <div>
-        <h3 className="text-lg font-medium mb-3">Transaction Type</h3>
-        <div className="space-y-2">
+      <div className="md:w-auto">
+        <h3 className="text-lg font-medium mb-2">Transaction Type</h3>
+        <div className="flex flex-col">
           {transactionTypeOptions.map(option => (
             <div key={option.value} className="flex items-center">
               <input
@@ -144,9 +144,9 @@ export default function FilterPanel() {
         </div>
       </div>
       
-      <div>
-        <h3 className="text-lg font-medium mb-3">Data Source</h3>
-        <div className="space-y-2">
+      <div className="md:w-auto">
+        <h3 className="text-lg font-medium mb-2">Data Source</h3>
+        <div className="flex flex-col">
           {dataSourceOptions.map(option => (
             <div key={option.value} className="flex items-center">
               <input
@@ -165,11 +165,14 @@ export default function FilterPanel() {
         </div>
       </div>
       
-      <DateRangePicker />
+      <div className="md:w-auto">
+        <h3 className="text-lg font-medium mb-2">Date Range</h3>
+        <DateRangePicker />
+      </div>
       
-      <div>
-        <h3 className="text-lg font-medium mb-3">Emergency Funding</h3>
-        <div className="space-y-2">
+      <div className="md:w-auto">
+        <h3 className="text-lg font-medium mb-2">Emergency Funding</h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1">
           {emergencyFundingOptions.map(option => (
             <div key={option.value} className="flex items-center">
               <input
@@ -179,7 +182,7 @@ export default function FilterPanel() {
                 onChange={() => handleEmergencyFundingChange(option.value)}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
-              <label htmlFor={`funding-${option.value}`} className="ml-2 block text-sm text-gray-700">
+              <label htmlFor={`funding-${option.value}`} className="ml-2 block text-sm text-gray-700 truncate">
                 {option.label}
               </label>
             </div>
@@ -187,7 +190,7 @@ export default function FilterPanel() {
         </div>
       </div>
       
-      <div className="pt-4">
+      <div className="md:w-auto self-end">
         <button
           onClick={handleResetFilters}
           className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
