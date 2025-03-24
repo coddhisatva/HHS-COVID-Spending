@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import dynamic from 'next/dynamic';
 import { Cell, Tooltip, Legend, ResponsiveContainer, PieChart, Pie } from 'recharts';
 import { useData } from '@/context/DataContext';
 import { formatCurrency, formatPercent } from '@/utils/formatters';
@@ -19,6 +18,8 @@ const COLORS = [
   '#3b82f6', // blue
   '#0ea5e9', // sky blue
   '#06b6d4', // cyan
+  '#22c55e', // green
+  '#eab308', // yellow
 ];
 
 // Custom tooltip for the pie chart
@@ -36,11 +37,11 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-function EmergencyFundingPieChart() {
+export default function EmergencyFundingPieChart() {
   const { state } = useData();
   // Use emergencyFundingBreakdown as a fallback for emergencyFunding
-  const fundingData: EmergencyFundingData[] = state.chartData.emergencyFunding || 
-    (state.chartData.emergencyFundingBreakdown || []).map(item => ({
+  const fundingData: EmergencyFundingData[] = state.chartData?.emergencyFunding || 
+    (state.chartData?.emergencyFundingBreakdown || []).map(item => ({
       name: item.name,
       value: item.value,
       percentage: 0 // Calculate percentage if needed
@@ -50,27 +51,6 @@ function EmergencyFundingPieChart() {
   
   const handlePieClick = (data: any, index: number) => {
     setActiveIndex(index === activeIndex ? null : index);
-  };
-  
-  const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }: any) => {
-    const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-    
-    return (
-      <text 
-        x={x} 
-        y={y} 
-        fill="#fff" 
-        textAnchor={x > cx ? 'start' : 'end'} 
-        dominantBaseline="central"
-        fontSize={12}
-        fontWeight="bold"
-      >
-        {`${formatPercent(percent * 100)}`}
-      </text>
-    );
   };
   
   return (
@@ -85,13 +65,13 @@ function EmergencyFundingPieChart() {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={renderLabel}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
                 onClick={handlePieClick}
                 isAnimationActive={true}
                 animationDuration={800}
+                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
               >
                 {fundingData.map((entry: any, index: number) => (
                   <Cell 
@@ -114,7 +94,4 @@ function EmergencyFundingPieChart() {
       </div>
     </div>
   );
-}
-
-// Use dynamic import only for the whole component
-export default dynamic(() => Promise.resolve(EmergencyFundingPieChart), { ssr: false }); 
+} 

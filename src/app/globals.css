@@ -52,6 +52,39 @@ body {
   background-color: #ef4444;
 }
 
+/* Additional styles for the visualization components */
+.bg-allocation-light {
+  background-color: #dcfce7;
+}
+
+.bg-deallocation-light {
+  background-color: #fee2e2;
+}
+
+.bg-primary-50 {
+  background-color: #eff6ff;
+}
+
+.bg-blue-50 {
+  background-color: #e0f2fe;
+}
+
+/* Make sure charts have the proper height */
+.recharts-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.recharts-surface {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Make visualizations responsive */
+.h-80 {
+  height: 20rem;
+}
+
 /* Custom scrollbar styles */
 ::-webkit-scrollbar {
   width: 8px;

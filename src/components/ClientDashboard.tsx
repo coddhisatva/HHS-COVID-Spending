@@ -1,32 +1,115 @@
 'use client';
 
+import React, { useEffect, useState } from 'react';
 import { DataProvider } from '@/context/DataContext';
-import dynamic from 'next/dynamic';
+import FilterPanel from '@/components/filters/FilterPanel';
+import SummaryMetrics from '@/components/dashboard/SummaryMetrics';
+import EmergencyFundingPieChart from '@/components/charts/EmergencyFundingPieChart';
+import TopEntityBarChart from '@/components/charts/TopEntityBarChart';
+import USMapChart from '@/components/charts/USMapChart';
 
-// Dynamically import client components
-const DashboardLayout = dynamic(() => import('@/components/layout/DashboardLayout'), {
-  ssr: false,
-  loading: () => (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+// Loading skeleton for the dashboard
+function DashboardSkeleton() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="text-center max-w-xl mx-auto">
+        <h2 className="text-3xl font-bold text-gray-800 mb-4">
           HHS COVID Spending Dashboard
         </h2>
-        <p className="text-gray-600 mb-4">Loading visualization components...</p>
-        <div className="animate-pulse flex space-x-4 justify-center">
-          <div className="rounded-full bg-slate-300 h-3 w-24"></div>
-          <div className="rounded-full bg-slate-300 h-3 w-24"></div>
-          <div className="rounded-full bg-slate-300 h-3 w-24"></div>
+        <p className="text-gray-600 mb-8 text-lg">
+          Loading visualization components...
+        </p>
+        <div className="space-y-6">
+          <div className="h-8 w-full bg-gray-200 rounded-md animate-pulse"></div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="h-40 bg-gray-200 rounded-md animate-pulse"></div>
+            <div className="h-40 bg-gray-200 rounded-md animate-pulse"></div>
+          </div>
+          <div className="h-64 bg-gray-200 rounded-md animate-pulse"></div>
         </div>
       </div>
     </div>
-  ),
-});
+  );
+}
+
+// Dashboard layout that directly includes components without dynamic imports
+function DashboardContent() {
+  return (
+    <main className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        <header className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">
+            HHS COVID Spending Dashboard
+          </h1>
+          <p className="text-lg text-gray-600">
+            Visualizing Department of Health and Human Services (HHS) funding data
+          </p>
+        </header>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Sidebar */}
+          <div className="lg:col-span-3 bg-white p-4 rounded-lg shadow">
+            <h2 className="text-xl font-semibold mb-4">Filters</h2>
+            <FilterPanel />
+          </div>
+          
+          {/* Main content area */}
+          <div className="lg:col-span-9 space-y-6">
+            {/* Key metrics */}
+            <div className="bg-white p-4 rounded-lg shadow">
+              <SummaryMetrics />
+            </div>
+            
+            {/* Visualization area */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Emergency Funding Pie Chart */}
+              <div className="bg-white p-4 rounded-lg shadow">
+                <EmergencyFundingPieChart />
+              </div>
+              
+              {/* Top Recipients Bar Chart */}
+              <div className="bg-white p-4 rounded-lg shadow">
+                <TopEntityBarChart entityType="recipient" />
+              </div>
+              
+              {/* Geographic Distribution Map */}
+              <div className="bg-white p-4 rounded-lg shadow md:col-span-2">
+                <USMapChart />
+              </div>
+              
+              {/* Top Programs Bar Chart */}
+              <div className="bg-white p-4 rounded-lg shadow md:col-span-2">
+                <TopEntityBarChart entityType="program" />
+              </div>
+            </div>
+            
+            {/* Data table */}
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h2 className="text-xl font-semibold mb-4">Data Explorer</h2>
+              <p className="text-gray-500">Data table will be implemented in the next phase</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
 
 export default function ClientDashboard() {
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure component is mounted on client-side to avoid hydration issues
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return <DashboardSkeleton />;
+  }
+
   return (
     <DataProvider>
-      <DashboardLayout />
+      <DashboardContent />
     </DataProvider>
   );
 } 
