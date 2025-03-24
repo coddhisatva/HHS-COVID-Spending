@@ -21,43 +21,43 @@ export default function SummaryMetrics() {
       title: 'Total Allocations',
       value: formatCurrency(summaryMetrics.totalAllocations),
       description: 'Total COVID-19 funding allocated',
-      className: 'bg-gradient-to-r from-blue-50 to-blue-100 border-l-4 border-blue-500'
+      className: 'bg-gradient-to-r from-blue-400 to-blue-500 text-white border-blue-600'
     },
     {
       title: 'Total Deallocations',
       value: formatCurrency(summaryMetrics.totalDeallocations),
       description: 'Total COVID-19 funding deallocated',
-      className: 'bg-gradient-to-r from-red-50 to-red-100 border-l-4 border-red-500'
+      className: 'bg-gradient-to-r from-red-400 to-red-500 text-white border-red-600'
     },
     {
       title: 'Net Funding',
       value: formatCurrency(summaryMetrics.netFunding),
       description: `${formatPercent(netFundingPercentage / 100)} of allocations`,
-      className: 'bg-gradient-to-r from-teal-50 to-teal-100 border-l-4 border-teal-500'
+      className: 'bg-gradient-to-r from-teal-400 to-teal-500 text-white border-teal-600'
     },
     {
       title: 'Emergency Funding',
       value: formatCurrency(summaryMetrics.totalEmergencyFunding),
       description: 'COVID-19 emergency response funding',
-      className: 'bg-gradient-to-r from-purple-50 to-purple-100 border-l-4 border-purple-500'
+      className: 'bg-gradient-to-r from-purple-400 to-purple-500 text-white border-purple-600'
     }
   ];
   
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 border border-blue-100">
-      <h2 className="text-2xl font-semibold mb-6 text-gray-800">
+    <div className="bg-white rounded-lg shadow p-4 border border-blue-100">
+      <h2 className="text-xl font-medium mb-3 text-gray-800 border-b pb-2">
         Summary Metrics
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {metrics.map((metric, i) => (
           <div 
             key={i} 
-            className={`p-5 rounded-lg ${metric.className} shadow-md transition-all hover:shadow-lg hover:translate-y-[-2px] duration-300`}
+            className={`p-4 rounded-lg ${metric.className} shadow-md transition-all hover:shadow-lg hover:translate-y-[-2px] duration-300 border-b-4`}
           >
             <div>
-              <h3 className="text-sm font-semibold text-gray-600">{metric.title}</h3>
-              <p className="text-2xl font-bold my-2 text-gray-900">{metric.value}</p>
-              <p className="text-xs text-gray-600">{metric.description}</p>
+              <h3 className="text-xs font-semibold uppercase text-white/90">{metric.title}</h3>
+              <p className="text-2xl font-extrabold my-2 text-white">{metric.value}</p>
+              <p className="text-xs text-white/80">{metric.description}</p>
             </div>
           </div>
         ))}

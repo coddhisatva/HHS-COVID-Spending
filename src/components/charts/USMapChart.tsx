@@ -39,8 +39,9 @@ export default function USMapChart({ width = 900, height = 500 }: USMapChartProp
   const containerRef = useRef<HTMLDivElement>(null);
   const [usTopoJSON, setUsTopoJSON] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [hoveredState, setHoveredState] = useState<string | null>(null);
-  const [dimensions, setDimensions] = useState({ width: 900, height: 500 });
+  const [dimensions, setDimensions] = useState({ width: 500, height: 300 });
   
   // Handle resize to make the map responsive
   useEffect(() => {
@@ -49,8 +50,8 @@ export default function USMapChart({ width = 900, height = 500 }: USMapChartProp
         const { width } = containerRef.current.getBoundingClientRect();
         // Maintain aspect ratio
         setDimensions({
-          width: width,
-          height: width * 0.55 // Maintain approximate US map aspect ratio
+          width: width - 20, // Padding
+          height: (width - 20) * 0.6 // Maintain approximate US map aspect ratio
         });
       }
     };
@@ -64,25 +65,32 @@ export default function USMapChart({ width = 900, height = 500 }: USMapChartProp
   // Load US map TopoJSON data
   useEffect(() => {
     setLoading(true);
+    setError(null);
     
     fetch('/us-states.json')
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Failed to load map data: ${response.status} ${response.statusText}`);
+        }
+        return response.json();
+      })
       .then(data => {
         setUsTopoJSON(data);
         setLoading(false);
       })
       .catch(error => {
         console.error('Error loading US TopoJSON data:', error);
+        setError(error.message || 'Failed to load map data');
         setLoading(false);
       });
   }, []);
   
   // Draw the map when all data is ready
   useEffect(() => {
-    if (!loading && usTopoJSON && mapRef.current) {
+    if (!loading && !error && usTopoJSON && mapRef.current) {
       drawMap();
     }
-  }, [loading, usTopoJSON, mapData, dimensions]);
+  }, [loading, error, usTopoJSON, mapData, dimensions]);
   
   const drawMap = () => {
     if (!mapRef.current || !usTopoJSON) return;
@@ -248,33 +256,48 @@ export default function USMapChart({ width = 900, height = 500 }: USMapChartProp
         .text('Allocation Amount');
     } catch (err) {
       console.error('Error drawing map:', err);
+      setError('Failed to render map');
     }
   };
   
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex items-center justify-center h-64 bg-blue-50 rounded-lg">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading map data...</p>
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-gray-600 font-medium">Loading map data...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64 bg-red-50 rounded-lg border border-red-200">
+        <div className="text-center max-w-md px-4">
+          <p className="text-red-500 font-medium mb-2">Error loading map</p>
+          <p className="text-gray-600 text-sm">{error}</p>
+          <p className="text-gray-500 text-xs mt-4">
+            Please ensure the map data file (us-states.json) is available in the public folder
+          </p>
         </div>
       </div>
     );
   }
   
   return (
-    <div className="relative h-full" ref={containerRef}>
-      <h2 className="text-xl font-medium mb-4 text-gray-800">
+    <div className="h-full" ref={containerRef}>
+      <h2 className="text-xl font-medium mb-3 text-gray-800 border-b pb-2">
         Geographic Distribution
       </h2>
-      <div className="h-[400px] md:h-[500px] relative">
+      <div className="relative">
         <svg 
           ref={mapRef} 
           width={dimensions.width} 
           height={dimensions.height} 
           viewBox={`0 0 ${dimensions.width} ${dimensions.height}`} 
           preserveAspectRatio="xMidYMid meet"
-          className="mx-auto"
+          className="bg-blue-50/30 rounded"
         />
         <div 
           ref={tooltipRef} 

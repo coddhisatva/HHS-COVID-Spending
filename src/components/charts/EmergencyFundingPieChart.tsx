@@ -12,12 +12,13 @@ interface EmergencyFundingData {
   percentage: number;
 }
 
-// Custom colors for the pie chart segments - using a vibrant but cohesive palette
+// Custom colors for the pie chart segments - more vibrant and distinguishable
 const COLORS = [
-  '#3b82f6', // blue
-  '#8b5cf6', // purple
+  '#4f46e5', // indigo
+  '#7c3aed', // violet
   '#06b6d4', // cyan
-  '#10b981', // green
+  '#0ea5e9', // sky
+  '#10b981', // emerald
   '#f59e0b', // amber
   '#ef4444', // red
 ];
@@ -33,7 +34,7 @@ const CustomTooltip = ({ active, payload }: any) => {
           Amount: <span className="text-blue-600">{formatCurrency(data.value)}</span>
         </p>
         <p className="text-gray-700 font-medium">
-          Percentage: <span className="text-blue-600">{formatPercent(data.percentage)}</span>
+          Percentage: <span className="text-blue-600">{formatPercent(data.percentage / 100)}</span>
         </p>
       </div>
     );
@@ -41,22 +42,22 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-// Custom legend renderer
+// Improved legend renderer for better readability
 const renderCustomizedLegend = (props: any) => {
   const { payload } = props;
   
   return (
-    <ul className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-4">
+    <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2">
       {payload.map((entry: any, index: number) => (
-        <li key={`item-${index}`} className="flex items-center">
+        <div key={`item-${index}`} className="flex items-center">
           <div 
-            className="w-3 h-3 rounded-full mr-2" 
+            className="w-4 h-4 rounded-sm mr-2 flex-shrink-0" 
             style={{ backgroundColor: entry.color }}
           />
-          <span className="text-sm text-gray-700">{entry.value}</span>
-        </li>
+          <span className="text-sm text-gray-700 truncate">{entry.value}</span>
+        </div>
       ))}
-    </ul>
+    </div>
   );
 };
 
@@ -86,79 +87,86 @@ export default function EmergencyFundingPieChart() {
   
   return (
     <div className="h-full">
-      <h2 className="text-xl font-medium mb-4 text-gray-800">
+      <h2 className="text-xl font-medium mb-3 text-gray-800 border-b pb-2">
         Emergency Funding Breakdown
       </h2>
-      <div className="h-[350px]">
-        {enhancedData && enhancedData.length > 0 ? (
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={enhancedData}
-                cx="50%"
-                cy="45%"
-                labelLine={false}
-                outerRadius={120}
-                innerRadius={60} // Create a donut chart for modern appearance
-                fill="#8884d8"
-                dataKey="value"
-                onClick={handlePieClick}
-                isAnimationActive={true}
-                animationDuration={800}
-                label={({ name, percent }) => 
-                  `${percent > 5 ? `${(percent * 100).toFixed(0)}%` : ''}`
-                }
-                paddingAngle={2} // Add padding between segments
-              >
-                {enhancedData.map((entry: any, index: number) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={COLORS[index % COLORS.length]} 
-                    stroke="#fff"
-                    strokeWidth={index === activeIndex ? 2 : 1}
-                    style={{
-                      filter: index === activeIndex ? 'drop-shadow(0px 0px 4px rgba(0,0,0,0.3))' : 'none',
-                      opacity: activeIndex === null || index === activeIndex ? 1 : 0.7,
-                      transition: 'opacity 0.3s, filter 0.3s'
-                    }}
-                  />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-              <Legend 
-                layout="horizontal" 
-                verticalAlign="bottom"
-                align="center"
-                content={renderCustomizedLegend}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        ) : (
-          <div className="flex items-center justify-center h-full bg-gray-50 rounded-lg border border-gray-200">
-            <p className="text-gray-500">No data available</p>
+      
+      {enhancedData && enhancedData.length > 0 ? (
+        <div className="flex flex-col md:flex-row">
+          <div className="flex-grow" style={{ height: '300px' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={enhancedData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={100}
+                  innerRadius={60} // Create a donut chart for modern appearance
+                  fill="#8884d8"
+                  dataKey="value"
+                  onClick={handlePieClick}
+                  isAnimationActive={true}
+                  animationDuration={800}
+                  label={({ name, percent }) => 
+                    `${percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''}`
+                  }
+                  paddingAngle={2} // Add padding between segments
+                >
+                  {enhancedData.map((entry: any, index: number) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={COLORS[index % COLORS.length]} 
+                      stroke="#fff"
+                      strokeWidth={index === activeIndex ? 2 : 1}
+                      style={{
+                        filter: index === activeIndex ? 'drop-shadow(0px 0px 4px rgba(0,0,0,0.3))' : 'none',
+                        opacity: activeIndex === null || index === activeIndex ? 1 : 0.7,
+                        transition: 'opacity 0.3s, filter 0.3s'
+                      }}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
-        )}
-      </div>
+          
+          <div className="mt-4 md:mt-0 md:ml-4 md:w-1/3 pl-2">
+            <h3 className="text-sm font-semibold text-gray-700 mb-2">Legend</h3>
+            {renderCustomizedLegend({ payload: enhancedData.map((item, index) => ({
+              value: item.name,
+              color: COLORS[index % COLORS.length]
+            }))})}
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg border border-gray-200">
+          <p className="text-gray-500">No emergency funding data available</p>
+        </div>
+      )}
       
       {/* Summary statistics below the chart */}
-      <div className="mt-4 grid grid-cols-2 gap-4">
-        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3 border-l-4 border-blue-500 shadow-sm">
-          <p className="text-sm text-gray-600">
-            Total Emergency Funding
-          </p>
-          <p className="text-lg font-bold text-gray-900">{formatCurrency(total)}</p>
+      {enhancedData && enhancedData.length > 0 && (
+        <div className="mt-4 grid grid-cols-2 gap-4">
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3 border-l-4 border-blue-500 shadow-sm">
+            <p className="text-sm text-gray-600">
+              Total Emergency Funding
+            </p>
+            <p className="text-lg font-bold text-gray-900">{formatCurrency(total)}</p>
+          </div>
+          <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-3 border-l-4 border-green-500 shadow-sm">
+            <p className="text-sm text-gray-600">
+              Largest Program
+            </p>
+            <p className="text-lg font-bold text-gray-900 truncate">
+              {enhancedData.length > 0 ? 
+                enhancedData.reduce((max, item) => item.value > max.value ? item : max, enhancedData[0]).name 
+                : 'N/A'}
+            </p>
+          </div>
         </div>
-        <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-3 border-l-4 border-green-500 shadow-sm">
-          <p className="text-sm text-gray-600">
-            Largest Program
-          </p>
-          <p className="text-lg font-bold text-gray-900">
-            {enhancedData.length > 0 ? 
-              enhancedData.reduce((max, item) => item.value > max.value ? item : max, enhancedData[0]).name 
-              : 'N/A'}
-          </p>
-        </div>
-      </div>
+      )}
     </div>
   );
 } 

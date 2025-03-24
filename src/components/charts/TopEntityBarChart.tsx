@@ -134,14 +134,14 @@ export default function TopEntityBarChart({ entityType }: TopEntityBarChartProps
   
   return (
     <div className="h-full">
-      <h2 className="text-xl font-medium mb-4 text-gray-800">
+      <h2 className="text-xl font-medium mb-3 text-gray-800 border-b pb-2">
         {title}
         {entityType === 'recipient' && 
           <span className="text-sm font-normal text-gray-500 ml-2">by allocation amount</span>
         }
       </h2>
       
-      <div className="h-[350px]">
+      <div style={{ height: '300px' }}>
         {data.length > 0 ? (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
@@ -163,8 +163,8 @@ export default function TopEntityBarChart({ entityType }: TopEntityBarChartProps
               <YAxis
                 dataKey="name"
                 type="category"
-                width={120}
-                tickFormatter={(value) => truncateString(value, 15)}
+                width={110}
+                tickFormatter={(value) => truncateString(value, 14)}
                 tick={{ fontSize: 12, fill: '#6b7280' }}
                 axisLine={{ stroke: '#e5e7eb' }}
               />
@@ -192,7 +192,7 @@ export default function TopEntityBarChart({ entityType }: TopEntityBarChartProps
                   dataKey="allocations" 
                   position="right" 
                   formatter={(value: number) => formatCurrency(value, true)} 
-                  style={{ fontSize: '12px', fill: '#374151', fontWeight: 500 }}
+                  style={{ fontSize: '11px', fill: '#374151', fontWeight: 500 }}
                 />
               </Bar>
               <Bar
@@ -217,7 +217,7 @@ export default function TopEntityBarChart({ entityType }: TopEntityBarChartProps
                   dataKey="deallocations" 
                   position="right" 
                   formatter={(value: number) => formatCurrency(value, true)} 
-                  style={{ fontSize: '12px', fill: '#374151', fontWeight: 500 }}
+                  style={{ fontSize: '11px', fill: '#374151', fontWeight: 500 }}
                 />
               </Bar>
             </BarChart>
@@ -231,17 +231,17 @@ export default function TopEntityBarChart({ entityType }: TopEntityBarChartProps
       
       {/* Summary statistics */}
       <div className="mt-4 grid grid-cols-2 gap-4">
-        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3 border-l-4 border-blue-500 shadow-sm">
-          <p className="text-sm text-gray-600">
+        <div className="bg-blue-500 rounded-lg p-3 border-b-4 border-blue-600 shadow-sm text-white">
+          <p className="text-xs font-semibold uppercase text-white/90">
             Total Allocations
           </p>
-          <p className="text-lg font-bold text-gray-900">{formatCurrency(totalAllocations)}</p>
+          <p className="text-xl font-bold text-white">{formatCurrency(totalAllocations)}</p>
         </div>
-        <div className="bg-gradient-to-r from-red-50 to-red-100 rounded-lg p-3 border-l-4 border-red-500 shadow-sm">
-          <p className="text-sm text-gray-600">
+        <div className="bg-red-500 rounded-lg p-3 border-b-4 border-red-600 shadow-sm text-white">
+          <p className="text-xs font-semibold uppercase text-white/90">
             Total Deallocations
           </p>
-          <p className="text-lg font-bold text-gray-900">{formatCurrency(totalDeallocations)}</p>
+          <p className="text-xl font-bold text-white">{formatCurrency(totalDeallocations)}</p>
         </div>
       </div>
     </div>
