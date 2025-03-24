@@ -2,6 +2,8 @@
 
 I wanted to dive into the federal account data from usaspending.gov, so I started with HHS Covid-related Allocation and De-allocation in 2025 (most recent period available).
 
+site: https://vercel.com/conor-egans-projects/hhs-covid-spending/deployments
+
 Website to access this data: https://www.usaspending.gov/download_center/custom_account_data
 
 Upon reaching the website, there are many parameters to select, to filter the data you receive. Below are the parameters I selected for this initial project (and why), for purposes of insight and replication:
