@@ -35,88 +35,59 @@ function DashboardSkeleton() {
 // Dashboard layout that directly includes components without dynamic imports
 function DashboardContent() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      {/* Header - Full width with blue accent */}
-      <header className="w-full bg-gradient-to-r from-blue-700 to-indigo-800 text-white shadow-lg py-4">
-        <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 md:px-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-white text-center">
+    <div className="min-h-screen bg-white">
+      {/* Header - Simple text header */}
+      <header className="w-full bg-white pt-4 pb-2">
+        <div className="w-full max-w-[1200px] mx-auto px-4">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
             HHS COVID Spending Dashboard
           </h1>
-          <p className="mt-2 text-blue-100 text-sm md:text-base text-center">
+          <p className="mt-1 text-gray-600 text-sm md:text-base">
             Visualizing Department of Health and Human Services (HHS) funding data for COVID-19 response
           </p>
         </div>
       </header>
       
-      <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 md:px-8 py-4">
-        {/* Filters bar - Horizontal at the top */}
-        <div className="mb-4 bg-white rounded-lg shadow p-4 border border-blue-100" style={{ display: 'block', width: '100%' }}>
-          <h2 className="text-lg font-semibold mb-3 text-gray-800 border-b pb-2">
-            Dashboard Filters
-          </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', width: '100%' }}>
-            <FilterPanel />
-          </div>
-        </div>
+      <main className="w-full max-w-[1200px] mx-auto px-4 py-4">
+        {/* Filter Panel */}
+        <section className="mb-6">
+          <h2 className="text-xl font-semibold mb-4">Dashboard Filters</h2>
+          <FilterPanel />
+        </section>
         
-        {/* Summary Metrics - Always visible at the top, full width */}
-        <div className="mb-4">
+        {/* Summary Metrics */}
+        <section className="mb-6">
+          <h2 className="text-xl font-semibold mb-4">Summary Metrics</h2>
           <SummaryMetrics />
-        </div>
+        </section>
         
-        {/* Main dashboard grid - 2x2 layout for primary visualizations */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Map visualization */}
-          <div className="bg-white rounded-lg shadow p-4 border border-blue-100">
+        {/* Geographic Distribution Map */}
+        <section className="mb-6">
+          <h2 className="text-xl font-semibold mb-4">Geographic Distribution</h2>
+          <div className="bg-white h-[350px] rounded-lg border border-gray-200 p-4">
             <USMapChart />
           </div>
-          
-          {/* Emergency funding pie chart */}
-          <div className="bg-white rounded-lg shadow p-4 border border-blue-100">
-            <EmergencyFundingPieChart />
-          </div>
+        </section>
+        
+        {/* Visualizations in a 2-column grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          {/* Emergency Funding Pie Chart */}
+          <section>
+            <h2 className="text-xl font-semibold mb-4">Emergency Funding</h2>
+            <div className="bg-white h-[350px] rounded-lg border border-gray-200 p-4">
+              <EmergencyFundingPieChart />
+            </div>
+          </section>
           
           {/* Top Recipients */}
-          <div className="bg-white rounded-lg shadow p-4 border border-blue-100">
-            <TopEntityBarChart entityType="recipient" />
-          </div>
-          
-          {/* Top Programs */}
-          <div className="bg-white rounded-lg shadow p-4 border border-blue-100">
-            <TopEntityBarChart entityType="program" />
-          </div>
-        </div>
-        
-        {/* Data Explorer - Full width at bottom */}
-        <div className="mt-4 bg-white rounded-lg shadow p-4 border border-blue-100">
-          <h2 className="text-lg font-semibold mb-3 text-gray-800 border-b pb-2">
-            Data Explorer
-          </h2>
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg text-center">
-            <p className="text-gray-600">Advanced data table will be implemented in the next phase</p>
-            <button className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50" disabled>
-              Coming Soon
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      {/* Footer */}
-      <footer className="mt-8 bg-gradient-to-r from-gray-800 to-gray-900 text-white py-4">
-        <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 md:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-4 md:mb-0">
-              <h3 className="text-lg font-semibold text-white">HHS COVID-19 Funding Data Dashboard</h3>
-              <p className="text-gray-400 text-sm mt-1">Visualizing COVID-19 response funding</p>
+          <section>
+            <h2 className="text-xl font-semibold mb-4">Top Recipients</h2>
+            <div className="bg-white h-[350px] rounded-lg border border-gray-200 p-4">
+              <TopEntityBarChart entityType="recipient" />
             </div>
-            <div>
-              <p className="text-gray-400 text-sm">
-                &copy; {new Date().getFullYear()} | Built with Next.js & Recharts
-              </p>
-            </div>
-          </div>
+          </section>
         </div>
-      </footer>
+      </main>
     </div>
   );
 }

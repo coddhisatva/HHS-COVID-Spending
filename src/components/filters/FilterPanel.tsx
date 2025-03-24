@@ -8,7 +8,6 @@ import {
   EmergencyFundingAct
 } from '@/types/data';
 import { useData } from '@/context/DataContext';
-import DateRangePicker from './DateRangePicker';
 
 const activityTypeOptions = [
   { value: FinancialActivityType.ALL, label: 'All Activity' },
@@ -99,106 +98,119 @@ export default function FilterPanel() {
     setSelectedEmergencyFunding([]);
     dispatch({ type: 'RESET_FILTERS' });
   };
+
+  // Handler for clear filters
+  const handleClearFilters = () => {
+    setSelectedEmergencyFunding([]);
+    dispatch({ type: 'RESET_FILTERS' });
+  };
   
   return (
-    <>
-      <div className="filter-section">
-        <h3 className="text-lg font-medium mb-2">Financial Type</h3>
-        <div className="flex flex-col">
-          {activityTypeOptions.map(option => (
-            <div key={option.value} className="flex items-center">
-              <input
-                type="radio"
-                id={`activity-${option.value}`}
-                name="activityType"
-                checked={filterState.activityType === option.value}
-                onChange={() => handleActivityTypeChange(option.value)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-              />
-              <label htmlFor={`activity-${option.value}`} className="ml-2 block text-sm text-gray-700">
-                {option.label}
-              </label>
-            </div>
-          ))}
+    <div className="bg-white border border-gray-200 rounded-lg p-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {/* Financial Type */}
+        <div className="filter-group">
+          <h3 className="text-base font-medium text-gray-900 mb-2">Financial Type</h3>
+          <div className="space-y-2">
+            {activityTypeOptions.map(option => (
+              <div key={option.value} className="flex items-center">
+                <input
+                  type="radio"
+                  id={`activity-${option.value}`}
+                  name="activityType"
+                  checked={filterState.activityType === option.value}
+                  onChange={() => handleActivityTypeChange(option.value)}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                />
+                <label htmlFor={`activity-${option.value}`} className="ml-2 block text-sm text-gray-700">
+                  {option.label}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Transaction Type */}
+        <div className="filter-group">
+          <h3 className="text-base font-medium text-gray-900 mb-2">Transaction Type</h3>
+          <div className="space-y-2">
+            {transactionTypeOptions.map(option => (
+              <div key={option.value} className="flex items-center">
+                <input
+                  type="radio"
+                  id={`transaction-${option.value}`}
+                  name="transactionType"
+                  checked={filterState.transactionType === option.value}
+                  onChange={() => handleTransactionTypeChange(option.value)}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                />
+                <label htmlFor={`transaction-${option.value}`} className="ml-2 block text-sm text-gray-700">
+                  {option.label}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Data Source */}
+        <div className="filter-group">
+          <h3 className="text-base font-medium text-gray-900 mb-2">Data Source</h3>
+          <div className="space-y-2">
+            {dataSourceOptions.map(option => (
+              <div key={option.value} className="flex items-center">
+                <input
+                  type="radio"
+                  id={`source-${option.value}`}
+                  name="dataSource"
+                  checked={filterState.dataSource === option.value}
+                  onChange={() => handleDataSourceChange(option.value)}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                />
+                <label htmlFor={`source-${option.value}`} className="ml-2 block text-sm text-gray-700">
+                  {option.label}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Emergency Funding */}
+        <div className="filter-group">
+          <h3 className="text-base font-medium text-gray-900 mb-2">Emergency Funding</h3>
+          <div className="space-y-2">
+            {emergencyFundingOptions.map(option => (
+              <div key={option.value} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={`funding-${option.value}`}
+                  checked={selectedEmergencyFunding.includes(option.value)}
+                  onChange={() => handleEmergencyFundingChange(option.value)}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label htmlFor={`funding-${option.value}`} className="ml-2 block text-sm text-gray-700 truncate">
+                  {option.label}
+                </label>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
       
-      <div className="filter-section">
-        <h3 className="text-lg font-medium mb-2">Transaction Type</h3>
-        <div className="flex flex-col">
-          {transactionTypeOptions.map(option => (
-            <div key={option.value} className="flex items-center">
-              <input
-                type="radio"
-                id={`transaction-${option.value}`}
-                name="transactionType"
-                checked={filterState.transactionType === option.value}
-                onChange={() => handleTransactionTypeChange(option.value)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-              />
-              <label htmlFor={`transaction-${option.value}`} className="ml-2 block text-sm text-gray-700">
-                {option.label}
-              </label>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      <div className="filter-section">
-        <h3 className="text-lg font-medium mb-2">Data Source</h3>
-        <div className="flex flex-col">
-          {dataSourceOptions.map(option => (
-            <div key={option.value} className="flex items-center">
-              <input
-                type="radio"
-                id={`source-${option.value}`}
-                name="dataSource"
-                checked={filterState.dataSource === option.value}
-                onChange={() => handleDataSourceChange(option.value)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-              />
-              <label htmlFor={`source-${option.value}`} className="ml-2 block text-sm text-gray-700">
-                {option.label}
-              </label>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      <div className="filter-section">
-        <h3 className="text-lg font-medium mb-2">Date Range</h3>
-        <DateRangePicker />
-      </div>
-      
-      <div className="filter-section" style={{ gridColumn: 'span 2' }}>
-        <h3 className="text-lg font-medium mb-2">Emergency Funding</h3>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-          {emergencyFundingOptions.map(option => (
-            <div key={option.value} className="flex items-center">
-              <input
-                type="checkbox"
-                id={`funding-${option.value}`}
-                checked={selectedEmergencyFunding.includes(option.value)}
-                onChange={() => handleEmergencyFundingChange(option.value)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor={`funding-${option.value}`} className="ml-2 block text-sm text-gray-700 truncate">
-                {option.label}
-              </label>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      <div className="filter-section">
+      {/* Filter Buttons */}
+      <div className="flex justify-end mt-4 space-x-3">
+        <button
+          onClick={handleClearFilters}
+          className="py-2 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+        >
+          Clear All Filters
+        </button>
         <button
           onClick={handleResetFilters}
-          className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          style={{ marginTop: '1.5rem' }}
+          className="py-2 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
         >
           Reset All Filters
         </button>
       </div>
-    </>
+    </div>
   );
 } 
