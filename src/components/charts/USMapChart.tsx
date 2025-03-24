@@ -21,7 +21,7 @@ interface StateData {
   deallocations: number;
 }
 
-export default function USMapChart({ width = 800, height = 500 }: USMapChartProps) {
+export default function USMapChart({ width = 900, height = 500 }: USMapChartProps) {
   const { state } = useData();
   // Use stateData as a fallback if mapData doesn't exist
   const stateData = state.chartData?.stateData || [];
@@ -36,9 +36,30 @@ export default function USMapChart({ width = 800, height = 500 }: USMapChartProp
   
   const mapRef = useRef<SVGSVGElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [usTopoJSON, setUsTopoJSON] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [hoveredState, setHoveredState] = useState<string | null>(null);
+  const [dimensions, setDimensions] = useState({ width: 900, height: 500 });
+  
+  // Handle resize to make the map responsive
+  useEffect(() => {
+    const handleResize = () => {
+      if (containerRef.current) {
+        const { width } = containerRef.current.getBoundingClientRect();
+        // Maintain aspect ratio
+        setDimensions({
+          width: width,
+          height: width * 0.55 // Maintain approximate US map aspect ratio
+        });
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Call once to set initial size
+    
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   // Load US map TopoJSON data
   useEffect(() => {
@@ -61,7 +82,7 @@ export default function USMapChart({ width = 800, height = 500 }: USMapChartProp
     if (!loading && usTopoJSON && mapRef.current) {
       drawMap();
     }
-  }, [loading, usTopoJSON, mapData]);
+  }, [loading, usTopoJSON, mapData, dimensions]);
   
   const drawMap = () => {
     if (!mapRef.current || !usTopoJSON) return;
@@ -75,7 +96,7 @@ export default function USMapChart({ width = 800, height = 500 }: USMapChartProp
       
       // Create a projection and path generator
       const projection = d3.geoAlbersUsa()
-        .fitSize([width, height], us);
+        .fitSize([dimensions.width, dimensions.height], us);
       
       const path = d3.geoPath()
         .projection(projection);
@@ -83,10 +104,10 @@ export default function USMapChart({ width = 800, height = 500 }: USMapChartProp
       // Calculate the maximum allocation for color scale
       const maxAllocation = d3.max(mapData, (d: StateData) => d.allocations) || 0;
       
-      // Create a color scale
+      // Create a color scale - using blue shades which look more professional
       const colorScale = d3.scaleLinear<string>()
-        .domain([0, maxAllocation])
-        .range(['#e5f5e0', '#31a354']);
+        .domain([0, maxAllocation / 2, maxAllocation])
+        .range(['#e0f2fe', '#60a5fa', '#2563eb']);
       
       // Create a group for the states
       const g = svg.append('g');
@@ -104,7 +125,7 @@ export default function USMapChart({ width = 800, height = 500 }: USMapChartProp
           );
           return stateData 
             ? colorScale(stateData.allocations) 
-            : '#f0f0f0';
+            : '#f1f5f9';
         })
         .attr('stroke', '#fff')
         .attr('stroke-width', 0.5)
@@ -127,6 +148,7 @@ export default function USMapChart({ width = 800, height = 500 }: USMapChartProp
               <div class="font-semibold">${d.properties.name}</div>
               <div>Allocations: ${formatCurrency(stateData?.allocations || 0)}</div>
               <div>Deallocations: ${formatCurrency(stateData?.deallocations || 0)}</div>
+              <div>Net: ${formatCurrency((stateData?.allocations || 0) - (stateData?.deallocations || 0))}</div>
             `;
           }
           
@@ -151,6 +173,79 @@ export default function USMapChart({ width = 800, height = 500 }: USMapChartProp
             .attr('stroke', '#fff')
             .attr('stroke-width', 0.5);
         });
+        
+      // Add a legend
+      const legendWidth = 200;
+      const legendHeight = 15;
+      const legendX = dimensions.width - legendWidth - 20;
+      const legendY = dimensions.height - 30;
+      
+      const legend = svg.append('g')
+        .attr('transform', `translate(${legendX}, ${legendY})`);
+      
+      // Create gradient for legend
+      const legendGradient = legend.append('defs')
+        .append('linearGradient')
+        .attr('id', 'legend-gradient')
+        .attr('x1', '0%')
+        .attr('y1', '0%')
+        .attr('x2', '100%')
+        .attr('y2', '0%');
+        
+      legendGradient.append('stop')
+        .attr('offset', '0%')
+        .attr('stop-color', colorScale(0));
+        
+      legendGradient.append('stop')
+        .attr('offset', '50%')
+        .attr('stop-color', colorScale(maxAllocation / 2));
+        
+      legendGradient.append('stop')
+        .attr('offset', '100%')
+        .attr('stop-color', colorScale(maxAllocation));
+      
+      // Draw legend rectangle
+      legend.append('rect')
+        .attr('width', legendWidth)
+        .attr('height', legendHeight)
+        .style('fill', 'url(#legend-gradient)')
+        .style('stroke', '#ccc')
+        .style('stroke-width', 0.5);
+      
+      // Add legend labels
+      legend.append('text')
+        .attr('x', 0)
+        .attr('y', -5)
+        .style('text-anchor', 'start')
+        .style('font-size', '10px')
+        .style('fill', '#666')
+        .text('$0');
+      
+      legend.append('text')
+        .attr('x', legendWidth)
+        .attr('y', -5)
+        .style('text-anchor', 'end')
+        .style('font-size', '10px')
+        .style('fill', '#666')
+        .text(formatCurrency(maxAllocation));
+        
+      legend.append('text')
+        .attr('x', legendWidth / 2)
+        .attr('y', -5)
+        .style('text-anchor', 'middle')
+        .style('font-size', '10px')
+        .style('fill', '#666')
+        .text(formatCurrency(maxAllocation / 2));
+        
+      // Add legend title
+      legend.append('text')
+        .attr('x', legendWidth / 2)
+        .attr('y', -20)
+        .style('text-anchor', 'middle')
+        .style('font-size', '12px')
+        .style('font-weight', 'bold')
+        .style('fill', '#444')
+        .text('Allocation Amount');
     } catch (err) {
       console.error('Error drawing map:', err);
     }
@@ -158,32 +253,36 @@ export default function USMapChart({ width = 800, height = 500 }: USMapChartProp
   
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <p>Loading map...</p>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading map data...</p>
+        </div>
       </div>
     );
   }
   
   return (
-    <div className="relative h-full">
-      <h2 className="text-lg font-medium mb-4">Geographic Distribution</h2>
-      <div className="h-80 relative">
+    <div className="relative h-full" ref={containerRef}>
+      <h2 className="text-xl font-medium mb-4 text-gray-800">Geographic Distribution</h2>
+      <div className="h-[400px] md:h-[500px] relative">
         <svg 
           ref={mapRef} 
-          width="100%" 
-          height="100%" 
-          viewBox={`0 0 ${width} ${height}`} 
+          width={dimensions.width} 
+          height={dimensions.height} 
+          viewBox={`0 0 ${dimensions.width} ${dimensions.height}`} 
           preserveAspectRatio="xMidYMid meet"
+          className="mx-auto"
         />
         <div 
           ref={tooltipRef} 
-          className="absolute hidden bg-white p-2 rounded shadow-md border border-gray-200 z-10"
+          className="absolute hidden z-10 bg-white p-3 rounded-md shadow-lg border border-gray-200 text-sm"
           style={{ display: 'none' }}
         />
       </div>
       
       {hoveredState && (
-        <div className="text-center mt-2 text-sm text-gray-600">
+        <div className="text-center mt-2 text-sm text-gray-600 font-medium">
           {hoveredState}
         </div>
       )}

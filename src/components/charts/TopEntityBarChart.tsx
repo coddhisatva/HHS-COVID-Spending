@@ -11,6 +11,7 @@ import {
   Legend, 
   LabelList,
   ResponsiveContainer, 
+  Cell,
 } from 'recharts';
 import { useData } from '@/context/DataContext';
 import { formatCurrency, truncateString } from '@/utils/formatters';
@@ -19,24 +20,50 @@ interface TopEntityBarChartProps {
   entityType: 'recipient' | 'program';
 }
 
+// Custom colors for better visual
+const COLORS = {
+  allocations: '#3b82f6', // blue
+  allocationsHover: '#2563eb', // darker blue
+  deallocations: '#ef4444', // red
+  deallocationsHover: '#dc2626', // darker red
+  bar: '#3b82f6', // blue
+  barHover: '#1d4ed8', // darker blue
+};
+
 // Custom tooltip component for the bar chart
 const CustomTooltip = ({ active, payload, entityType }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
+    const netAmount = data.allocations - data.deallocations;
+    const netPercentage = data.allocations > 0 ? 
+      (netAmount / data.allocations) * 100 : 0;
+      
     return (
-      <div className="bg-white p-3 shadow-md rounded border border-gray-200">
-        <p className="font-semibold text-gray-900">{data.name}</p>
-        <p className="text-gray-700">
-          Allocations: {formatCurrency(data.allocations)}
-        </p>
-        {data.deallocations > 0 && (
-          <p className="text-gray-700">
-            Deallocations: {formatCurrency(data.deallocations)}
+      <div className="bg-white p-4 shadow-xl rounded-lg border border-gray-200">
+        <p className="font-semibold text-lg text-gray-900 mb-2 border-b pb-2">{data.name}</p>
+        <div className="space-y-1">
+          <p className="text-gray-700 font-medium flex justify-between">
+            <span>Allocations:</span> 
+            <span className="text-blue-600">{formatCurrency(data.allocations)}</span>
           </p>
-        )}
-        <p className="text-gray-700">
-          Net: {formatCurrency(data.allocations - data.deallocations)}
-        </p>
+          {data.deallocations > 0 && (
+            <p className="text-gray-700 font-medium flex justify-between">
+              <span>Deallocations:</span> 
+              <span className="text-red-600">{formatCurrency(data.deallocations)}</span>
+            </p>
+          )}
+          <p className="text-gray-700 font-medium flex justify-between border-t pt-1 mt-1">
+            <span>Net Funding:</span>
+            <span className={netAmount >= 0 ? "text-blue-600" : "text-red-600"}>
+              {formatCurrency(netAmount)}
+            </span>
+          </p>
+          <p className="text-xs text-gray-500 mt-2">
+            {data.deallocations > 0 
+              ? `${netPercentage.toFixed(1)}% of funds retained` 
+              : 'No funds deallocated'}
+          </p>
+        </div>
       </div>
     );
   }
@@ -44,14 +71,39 @@ const CustomTooltip = ({ active, payload, entityType }: any) => {
   return null;
 };
 
+// Custom legend component
+const renderLegend = (props: any) => {
+  const { payload } = props;
+  
+  return (
+    <div className="flex justify-center items-center gap-6 mt-4 p-2 bg-blue-50 rounded-md">
+      {payload.map((entry: any, index: number) => (
+        <div key={`legend-${index}`} className="flex items-center">
+          <div 
+            className="w-4 h-4 mr-2"
+            style={{ 
+              backgroundColor: entry.color,
+              borderRadius: '3px'
+            }}
+          />
+          <span className="text-sm text-gray-700 font-medium">{entry.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export default function TopEntityBarChart({ entityType }: TopEntityBarChartProps) {
   const { state, dispatch } = useData();
   const { chartData } = state;
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   
-  const data = entityType === 'recipient' 
+  const rawData = entityType === 'recipient' 
     ? (chartData?.topRecipients || [])
     : (chartData?.topPrograms || []);
+    
+  // Sort data by allocation amount for better visualization
+  const data = [...rawData].sort((a, b) => b.allocations - a.allocations).slice(0, 8);
   
   const title = entityType === 'recipient' 
     ? 'Top Recipients' 
@@ -76,56 +128,99 @@ export default function TopEntityBarChart({ entityType }: TopEntityBarChartProps
     }
   };
   
+  // Calculate total amounts
+  const totalAllocations = data.reduce((sum, item) => sum + item.allocations, 0);
+  const totalDeallocations = data.reduce((sum, item) => sum + item.deallocations, 0);
+  
   return (
     <div className="h-full">
-      <h2 className="text-lg font-medium mb-4">{title}</h2>
-      <div className="h-80">
+      <h2 className="text-xl font-medium mb-4 text-gray-800 flex items-center">
+        <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        {title}
+        {entityType === 'recipient' && 
+          <span className="text-sm font-normal text-gray-500 ml-2">by allocation amount</span>
+        }
+      </h2>
+      
+      <div className="h-[350px]">
         {data.length > 0 ? (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={data}
               layout="vertical"
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              barGap={0}
+              barCategoryGap={10}
             >
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e5e7eb" />
               <XAxis
                 type="number"
-                tickFormatter={(value) => formatCurrency(value)}
+                tickFormatter={(value) => formatCurrency(value, true)}
+                tickCount={5}
+                domain={[0, 'dataMax']}
+                axisLine={{ stroke: '#e5e7eb' }}
+                tick={{ fill: '#6b7280', fontSize: 12 }}
               />
               <YAxis
                 dataKey="name"
                 type="category"
                 width={120}
                 tickFormatter={(value) => truncateString(value, 15)}
+                tick={{ fontSize: 12, fill: '#6b7280' }}
+                axisLine={{ stroke: '#e5e7eb' }}
               />
               <Tooltip content={<CustomTooltip entityType={entityType} />} />
-              <Legend />
+              <Legend content={renderLegend} />
               <Bar
                 dataKey="allocations"
                 name="Allocations"
-                fill="#4ade80"
+                fill={COLORS.allocations}
                 onClick={handleBarClick}
                 className="cursor-pointer"
+                radius={[0, 4, 4, 0]}
               >
+                {data.map((entry, index) => (
+                  <Cell 
+                    key={`allocations-${index}`}
+                    fill={index === activeIndex ? COLORS.allocationsHover : COLORS.allocations}
+                    style={{
+                      filter: index === activeIndex ? 'drop-shadow(0px 0px 4px rgba(37,99,235,0.4))' : 'none',
+                      transition: 'all 0.3s'
+                    }}
+                  />
+                ))}
                 <LabelList 
                   dataKey="allocations" 
                   position="right" 
-                  formatter={(value: number) => formatCurrency(value)} 
-                  style={{ fontSize: '12px' }}
+                  formatter={(value: number) => formatCurrency(value, true)} 
+                  style={{ fontSize: '12px', fill: '#374151', fontWeight: 500 }}
                 />
               </Bar>
               <Bar
                 dataKey="deallocations"
                 name="Deallocations"
-                fill="#f87171"
+                fill={COLORS.deallocations}
                 onClick={handleBarClick}
                 className="cursor-pointer"
+                radius={[0, 4, 4, 0]}
               >
+                {data.map((entry, index) => (
+                  <Cell 
+                    key={`deallocations-${index}`}
+                    fill={index === activeIndex ? COLORS.deallocationsHover : COLORS.deallocations}
+                    style={{
+                      filter: index === activeIndex ? 'drop-shadow(0px 0px 4px rgba(220,38,38,0.4))' : 'none',
+                      transition: 'all 0.3s'
+                    }}
+                  />
+                ))}
                 <LabelList 
                   dataKey="deallocations" 
                   position="right" 
-                  formatter={(value: number) => formatCurrency(value)} 
-                  style={{ fontSize: '12px' }}
+                  formatter={(value: number) => formatCurrency(value, true)} 
+                  style={{ fontSize: '12px', fill: '#374151', fontWeight: 500 }}
                 />
               </Bar>
             </BarChart>
@@ -135,6 +230,28 @@ export default function TopEntityBarChart({ entityType }: TopEntityBarChartProps
             <p className="text-gray-500">No data available</p>
           </div>
         )}
+      </div>
+      
+      {/* Summary statistics */}
+      <div className="mt-4 grid grid-cols-2 gap-4">
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3 border-l-4 border-blue-500 shadow-sm">
+          <p className="text-sm text-gray-600 flex items-center">
+            <svg className="w-4 h-4 mr-1 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Total Allocations
+          </p>
+          <p className="text-lg font-bold text-gray-900">{formatCurrency(totalAllocations)}</p>
+        </div>
+        <div className="bg-gradient-to-r from-red-50 to-red-100 rounded-lg p-3 border-l-4 border-red-500 shadow-sm">
+          <p className="text-sm text-gray-600 flex items-center">
+            <svg className="w-4 h-4 mr-1 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+            </svg>
+            Total Deallocations
+          </p>
+          <p className="text-lg font-bold text-gray-900">{formatCurrency(totalDeallocations)}</p>
+        </div>
       </div>
     </div>
   );

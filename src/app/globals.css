@@ -25,15 +25,32 @@
   --radius: 0.5rem;
 }
 
+/* Base styles */
 * {
   border-color: #e5e7eb;
+  box-sizing: border-box;
 }
 
 body {
-  background-color: white;
+  background-color: #f9fafb;
   color: #111827;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
+/* Dashboard component styling */
+.dashboard-card {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.dashboard-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* Chart and visualization styling */
 .allocation {
   color: #16a34a;
   background-color: #dcfce7;
@@ -52,27 +69,35 @@ body {
   background-color: #ef4444;
 }
 
-/* Additional styles for the visualization components */
+/* Metrics cards */
 .bg-allocation-light {
   background-color: #dcfce7;
+  border-left: 4px solid #16a34a;
 }
 
 .bg-deallocation-light {
   background-color: #fee2e2;
+  border-left: 4px solid #dc2626;
 }
 
 .bg-primary-50 {
   background-color: #eff6ff;
+  border-left: 4px solid #3b82f6;
 }
 
 .bg-blue-50 {
   background-color: #e0f2fe;
+  border-left: 4px solid #0ea5e9;
 }
 
-/* Make sure charts have the proper height */
+/* Chart specific styling */
 .recharts-wrapper {
   width: 100% !important;
   height: 100% !important;
+}
+
+.recharts-responsive-container {
+  min-height: 300px !important;
 }
 
 .recharts-surface {
@@ -80,9 +105,65 @@ body {
   height: 100% !important;
 }
 
+/* Better labels for charts */
+.recharts-layer.recharts-pie-labels text {
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.recharts-legend-item-text {
+  font-weight: 500 !important;
+  color: #374151 !important;
+}
+
+/* Make bar charts more visible */
+.recharts-cartesian-grid line {
+  stroke: #e5e7eb;
+  stroke-width: 1;
+}
+
+.recharts-cartesian-axis-line {
+  stroke: #d1d5db;
+  stroke-width: 1;
+}
+
+.recharts-bar-rectangle {
+  transition: opacity 0.2s;
+}
+
+.recharts-bar-rectangle:hover {
+  opacity: 0.8;
+}
+
 /* Make visualizations responsive */
 .h-80 {
   height: 20rem;
+}
+
+/* Filter panel styling */
+input[type="radio"],
+input[type="checkbox"] {
+  accent-color: #3b82f6;
+  width: 1rem;
+  height: 1rem;
+}
+
+input[type="radio"] + label,
+input[type="checkbox"] + label {
+  padding-left: 0.5rem;
+  cursor: pointer;
+}
+
+button {
+  transition: all 0.2s;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(1px);
 }
 
 /* Custom scrollbar styles */
