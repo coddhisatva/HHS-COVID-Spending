@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import dynamic from 'next/dynamic';
 import { 
   BarChart,
   Bar,
@@ -45,14 +44,14 @@ const CustomTooltip = ({ active, payload, entityType }: any) => {
   return null;
 };
 
-function TopEntityBarChart({ entityType }: TopEntityBarChartProps) {
+export default function TopEntityBarChart({ entityType }: TopEntityBarChartProps) {
   const { state, dispatch } = useData();
   const { chartData } = state;
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   
   const data = entityType === 'recipient' 
-    ? chartData.topRecipients 
-    : chartData.topPrograms;
+    ? (chartData?.topRecipients || [])
+    : (chartData?.topPrograms || []);
   
   const title = entityType === 'recipient' 
     ? 'Top Recipients' 
@@ -139,7 +138,4 @@ function TopEntityBarChart({ entityType }: TopEntityBarChartProps) {
       </div>
     </div>
   );
-}
-
-// Use dynamic import only for the whole component
-export default dynamic(() => Promise.resolve(TopEntityBarChart), { ssr: false }); 
+} 

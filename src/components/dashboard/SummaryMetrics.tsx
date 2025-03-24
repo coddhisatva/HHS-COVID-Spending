@@ -5,7 +5,12 @@ import { formatCurrency, formatPercent } from '@/utils/formatters';
 
 export default function SummaryMetrics() {
   const { state } = useData();
-  const { summaryMetrics } = state.chartData;
+  const summaryMetrics = state.chartData?.summaryMetrics || {
+    totalAllocations: 0,
+    totalDeallocations: 0,
+    netFunding: 0,
+    totalEmergencyFunding: 0
+  };
   
   const netFundingPercentage = summaryMetrics.totalAllocations > 0 
     ? (summaryMetrics.netFunding / summaryMetrics.totalAllocations) * 100 

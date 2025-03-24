@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import dynamic from 'next/dynamic';
 import { feature } from 'topojson-client';
 import { formatCurrency } from '@/utils/formatters';
 import { useData } from '@/context/DataContext';
@@ -22,12 +21,11 @@ interface StateData {
   deallocations: number;
 }
 
-// Create a component that will only run on the client side
-function USMapChart({ width = 800, height = 500 }: USMapChartProps) {
+export default function USMapChart({ width = 800, height = 500 }: USMapChartProps) {
   const { state } = useData();
   // Use stateData as a fallback if mapData doesn't exist
-  const stateData = state.chartData.stateData || [];
-  const mapData: StateData[] = state.chartData.mapData || 
+  const stateData = state.chartData?.stateData || [];
+  const mapData: StateData[] = state.chartData?.mapData || 
     // Transform stateData to match mapData structure if necessary
     stateData.map(item => ({
       stateAbbr: item.state,
@@ -191,7 +189,4 @@ function USMapChart({ width = 800, height = 500 }: USMapChartProps) {
       )}
     </div>
   );
-}
-
-// Use dynamic import only for the whole component
-export default dynamic(() => Promise.resolve(USMapChart), { ssr: false }); 
+} 
