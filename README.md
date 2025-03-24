@@ -1,5 +1,9 @@
-(I ran into some issues here, so I'm going to restart on a fresh repo here, but I'll keep this here for now)
+[DEPRECATED]This version is deprecated. Check out the current version:
+-Repository: https://github.com/coddhisatva/HHS-COVID-Spending-v2
+-Live site: https://hhs-covid-spending-v2.vercel.app/
 
+_______
+[DEPRECATED]
 I wanted to dive into the federal account data from usaspending.gov, so I started with HHS Covid-related Allocation and De-allocation in 2025 (most recent period available).
 
 site: https://vercel.com/conor-egans-projects/hhs-covid-spending/deployments
