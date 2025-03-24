@@ -1,3 +1,5 @@
+(I ran into some issues here, so I'm going to restart on a fresh repo here, but I'll keep this here for now)
+
 I wanted to dive into the federal account data from usaspending.gov, so I started with HHS Covid-related Allocation and De-allocation in 2025 (most recent period available).
 
 Website to access this data: https://www.usaspending.gov/download_center/custom_account_data

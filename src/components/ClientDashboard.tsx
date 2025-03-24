@@ -35,46 +35,46 @@ function DashboardSkeleton() {
 // Dashboard layout that directly includes components without dynamic imports
 function DashboardContent() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
       {/* Header - Simple text header */}
-      <header className="w-full bg-white pt-4 pb-2">
-        <div className="w-full max-w-[1200px] mx-auto px-4">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+      <header className="w-full bg-white border-b border-gray-200 py-6">
+        <div className="max-w-[1200px] mx-auto px-6">
+          <h1 className="text-3xl font-bold text-gray-900">
             HHS COVID Spending Dashboard
           </h1>
-          <p className="mt-1 text-gray-600 text-sm md:text-base">
+          <p className="mt-2 text-gray-600">
             Visualizing Department of Health and Human Services (HHS) funding data for COVID-19 response
           </p>
         </div>
       </header>
       
-      <main className="w-full max-w-[1200px] mx-auto px-4 py-4">
+      <main className="max-w-[1200px] mx-auto px-6 py-8">
         {/* Filter Panel */}
-        <section className="mb-6">
+        <section className="mb-8">
           <h2 className="text-xl font-semibold mb-4">Dashboard Filters</h2>
           <FilterPanel />
         </section>
         
         {/* Summary Metrics */}
-        <section className="mb-6">
+        <section className="mb-8">
           <h2 className="text-xl font-semibold mb-4">Summary Metrics</h2>
           <SummaryMetrics />
         </section>
         
-        {/* Geographic Distribution Map */}
-        <section className="mb-6">
-          <h2 className="text-xl font-semibold mb-4">Geographic Distribution</h2>
-          <div className="bg-white h-[350px] rounded-lg border border-gray-200 p-4">
-            <USMapChart />
-          </div>
-        </section>
-        
-        {/* Visualizations in a 2-column grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* Visualizations in a grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Geographic Distribution Map */}
+          <section>
+            <h2 className="text-xl font-semibold mb-4">Geographic Distribution</h2>
+            <div className="bg-white h-[350px] rounded-lg border border-gray-200 p-4 shadow-sm">
+              <USMapChart />
+            </div>
+          </section>
+          
           {/* Emergency Funding Pie Chart */}
           <section>
             <h2 className="text-xl font-semibold mb-4">Emergency Funding</h2>
-            <div className="bg-white h-[350px] rounded-lg border border-gray-200 p-4">
+            <div className="bg-white h-[350px] rounded-lg border border-gray-200 p-4 shadow-sm">
               <EmergencyFundingPieChart />
             </div>
           </section>
@@ -82,7 +82,7 @@ function DashboardContent() {
           {/* Top Recipients */}
           <section>
             <h2 className="text-xl font-semibold mb-4">Top Recipients</h2>
-            <div className="bg-white h-[350px] rounded-lg border border-gray-200 p-4">
+            <div className="bg-white h-[350px] rounded-lg border border-gray-200 p-4 shadow-sm">
               <TopEntityBarChart entityType="recipient" />
             </div>
           </section>

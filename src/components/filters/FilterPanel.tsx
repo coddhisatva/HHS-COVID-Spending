@@ -106,8 +106,8 @@ export default function FilterPanel() {
   };
   
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+      <div className="flex flex-wrap items-start gap-8">
         {/* Financial Type */}
         <div className="filter-group">
           <h3 className="text-base font-medium text-gray-900 mb-2">Financial Type</h3>
@@ -197,16 +197,16 @@ export default function FilterPanel() {
       </div>
       
       {/* Filter Buttons */}
-      <div className="flex justify-end mt-4 space-x-3">
+      <div className="flex justify-end mt-6 space-x-3">
         <button
           onClick={handleClearFilters}
-          className="py-2 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+          className="py-2 px-4 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
         >
           Clear All Filters
         </button>
         <button
           onClick={handleResetFilters}
-          className="py-2 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+          className="py-2 px-4 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
         >
           Reset All Filters
         </button>
